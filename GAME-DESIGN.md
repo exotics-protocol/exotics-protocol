@@ -104,3 +104,7 @@ TODO Description
 function raceResult(uint256 raceId) public view returns (uint256[] memory result)
 ```
 Returns a list of length 3 containing the first, second and third place of the race.
+
+## Jackpot payout
+
+A fee is taken from every bet and added to a treasury fund. A jackpot payout can happen randomly on a race and every who has a winning bet on that race will have their payout boosted by the jackpot fund. TODO: Full define this aspect of game.
