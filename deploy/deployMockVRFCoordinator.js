@@ -9,7 +9,7 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
   // avalanche fuji uses chainlink
   else if (chainId == 43113) {
   }
-  // hardhat uses mock usdc
+  // hardhat uses mock vrf
   else if (chainId == 31337) {
     await deploy('MockVRFCoordinator', {
       contract: 'MockVRFCoordinator',
