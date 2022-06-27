@@ -49,6 +49,36 @@ contract Exotic is VRFConsumerBaseV2 {
     /// @notice used internally to map races to VRF requests.
     mapping(uint256 => uint256) private requestIdRace;
 
+    /// @notice emitted when a new bet is placed on a race.
+    event Wagered(
+        uint256 indexed raceId,
+        address indexed from,
+        uint256 amount,
+        uint256[] prediction,
+        uint256 poolTotal
+    );
+
+    /// @notice emitted when a bet is cashed out.
+    event Payout(
+        uint256 indexed raceId,
+        address indexed to,
+        uint256 amount,
+        uint256[] prediction,
+        uint256 payout
+    );
+
+    /// @notice emitted when a race starts.
+    event RaceStart(
+        uint256 indexed raceId,
+        uint256 totalValue
+    );
+    /// @notice emitted when a race ends.
+    event RaceEnd(
+        uint256 indexed raceId,
+        uint256 totalValue,
+        uint256[6] result
+    );
+
     constructor(uint64 subscriptionId, address _vrfCoordinator) VRFConsumerBaseV2(_vrfCoordinator) {
 		COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
         start = block.timestamp;
@@ -96,6 +126,13 @@ contract Exotic is VRFConsumerBaseV2 {
 
         // Internal accounting.
         balance += msg.value;
+        emit Wagered(
+            raceId,
+            msg.sender,
+            msg.value,
+            prediction,
+            balance
+        );
         return bet[msg.sender].length - 1;
     }
 
@@ -118,6 +155,13 @@ contract Exotic is VRFConsumerBaseV2 {
         _bet.paid = true;
         _race.paid += _payout;
         balance -= _payout;
+        emit Payout(
+            _bet.raceId,
+            msg.sender,
+            _bet.amount,
+            _bet.place,
+            _payout
+        );
         payable(msg.sender).transfer(_payout);
     }
 
@@ -136,6 +180,10 @@ contract Exotic is VRFConsumerBaseV2 {
 		  numWords
 		);
         requestIdRace[s_requestId] = raceId;
+        emit RaceStart(
+            raceId,
+            balance
+        );
     }
 
     /// @notice VRF callback function.
@@ -147,6 +195,11 @@ contract Exotic is VRFConsumerBaseV2 {
         Race storage _race = race[raceId];
         require(_race.result == 0, "Randomness already fulfilled");
         _race.result = randomWords[0];
+        emit RaceEnd(
+            raceId,
+            balance,
+            raceResult(raceId)
+        );
     }
 
     /// @notice Validate a `raceId` is valid to make a bet on.
