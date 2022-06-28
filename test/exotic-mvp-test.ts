@@ -115,4 +115,18 @@ describe.only("Exotics MVP test case", function () {
     await expect(this.exotic.endRace(nextRace)).to.be.reverted;
   });
 
+  it("should return users bets", async function () {
+	const nextRace = await this.exotic.nextRaceId();
+	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
+    expect(await this.exotic.userBetCount(this.signers[0].address)).to.equal(1);
+	await this.exotic.placeBet(nextRace, [1], {value: ethers.utils.parseEther('1')});
+    expect(await this.exotic.userBetCount(this.signers[0].address)).to.equal(2);
+
+    const betOne = await this.exotic.userBet(this.signers[0].address, 0);
+    expect(betOne[0]).to.equal(nextRace);
+    expect(betOne[1]).to.equal(ethers.utils.parseEther('1'));
+    expect(betOne[2][0]).to.equal(0);
+    expect(betOne[3]).to.equal(false);
+  });
+
 });

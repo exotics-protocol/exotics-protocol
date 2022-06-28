@@ -86,6 +86,21 @@ contract Exotic is VRFConsumerBaseV2 {
 		s_subscriptionId = subscriptionId;
     }
 
+    /// @notice Return the amount of bets a user has made.
+    function userBetCount(address user) external view returns (uint256) {
+        return bet[user].length;
+    }
+
+    /// @notice Returns a users bet with given id.
+    function userBet(
+        address user, uint256 betId
+    ) external view returns (
+        uint256, uint256, uint256[] memory, bool
+    ) {
+        Bet memory _bet = bet[user][betId];
+        return (_bet.raceId, _bet.amount, _bet.place, _bet.paid);
+    }
+
 	/// @notice The time of the next race to take place.
 	function nextRaceId() external view returns (uint256) {
 		return block.timestamp + (frequency - (block.timestamp % frequency));
