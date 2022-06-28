@@ -13,8 +13,8 @@ contract Exotic is VRFConsumerBaseV2 {
     uint64 s_subscriptionId;
     address vrfCoordinator;
     // see https://docs.chain.link/docs/vrf-contracts/#configurations
-    bytes32 keyHash = 0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc;
-    uint32 callbackGasLimit = 300000;
+    bytes32 keyHash = 0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61;
+    uint32 callbackGasLimit = 200000;
     uint16 requestConfirmations = 3;
     uint32 numWords =  1;
 
@@ -77,7 +77,7 @@ contract Exotic is VRFConsumerBaseV2 {
     event RaceEnd(
         uint256 indexed raceId,
         uint256 totalValue,
-        uint256[6] result
+        uint256 result
     );
 
     constructor(uint64 subscriptionId, address _vrfCoordinator) VRFConsumerBaseV2(_vrfCoordinator) {
@@ -200,7 +200,7 @@ contract Exotic is VRFConsumerBaseV2 {
         emit RaceEnd(
             raceId,
             balance,
-            raceResult(raceId)
+            randomWords[0]
         );
     }
 
