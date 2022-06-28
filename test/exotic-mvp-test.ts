@@ -106,4 +106,13 @@ describe.only("Exotics MVP test case", function () {
 
   });
 
+  it("should not allow ending a race twice", async function () {
+	const nextRace = await this.exotic.nextRaceId();
+	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
+	await this.exotic.connect(this.signers[1]).placeBet(nextRace, [1], {value: ethers.utils.parseEther('1')});
+	await network.provider.send("evm_increaseTime", [1199])  // Maximum time possible for race to end as we don't fully control starttime.
+	await this.exotic.endRace(nextRace);
+    await expect(this.exotic.endRace(nextRace)).to.be.reverted;
+  });
+
 });

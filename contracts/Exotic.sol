@@ -39,6 +39,7 @@ contract Exotic is VRFConsumerBaseV2 {
         uint256 totalWagered;
         uint256 paid;
         uint256 result;
+        uint256 requestId;
         uint256[6][3] weights;
     }
 
@@ -169,8 +170,8 @@ contract Exotic is VRFConsumerBaseV2 {
     function endRace(uint256 raceId) external {
         validateRaceID(raceId);
         require(block.timestamp > raceId + frequency, "Race not finished");
-        require(requestIdRace[raceId] == 0, "Result already requested");
         Race storage _race = race[raceId];
+        require(_race.requestId == 0, "Result already requested");
         require(_race.result == 0, "Race result already fulfilled");
 	 	uint256 s_requestId = COORDINATOR.requestRandomWords(
 		  keyHash,
@@ -179,6 +180,7 @@ contract Exotic is VRFConsumerBaseV2 {
 		  callbackGasLimit,
 		  numWords
 		);
+        _race.requestId = s_requestId;
         requestIdRace[s_requestId] = raceId;
         emit RaceStart(
             raceId,
