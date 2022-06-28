@@ -14,14 +14,14 @@ contract Exotic is VRFConsumerBaseV2 {
     address vrfCoordinator;
     // see https://docs.chain.link/docs/vrf-contracts/#configurations
     bytes32 keyHash = 0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc;
-    uint32 callbackGasLimit = 100000;
+    uint32 callbackGasLimit = 300000;
     uint16 requestConfirmations = 3;
     uint32 numWords =  1;
 
     uint256 private balance;
 
     /// @notice How often races take place.
-    uint256 public constant frequency = 10 minutes;
+    uint256 public constant frequency = 3 minutes;
 
     /// @notice The datetime of the first race.
     uint256 public immutable start;
