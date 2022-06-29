@@ -109,6 +109,17 @@ contract Exotic is Initializable {
         return (_bet.raceId, _bet.amount, _bet.place, _bet.paid);
     }
 
+    function userBets(
+        address user, uint256 resultsPerPage, uint256 page
+    ) external view returns(Bet[] memory) {
+        Bet[] memory result = new Bet[](resultsPerPage);
+        uint256 i;
+        for(i = resultsPerPage * page - resultsPerPage; i < resultsPerPage * page; i++) {
+            result[i] = bet[user][i];
+        }
+        return result;
+    }
+
 	/// @notice The time of the next race to take place.
 	function nextRaceId() external view returns (uint256) {
 		return block.timestamp + (frequency - (block.timestamp % frequency));

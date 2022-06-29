@@ -142,5 +142,13 @@ describe.only("Exotics MVP test case", function () {
     ).to.eq(ethers.utils.parseEther('0.01'));
   });
 
+  it("should return paginated list of bets", async function () {
+	const nextRace = await this.exotic.nextRaceId();
+	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
+	await this.exotic.placeBet(nextRace, [1], {value: ethers.utils.parseEther('1')});
+	await this.exotic.placeBet(nextRace, [2], {value: ethers.utils.parseEther('1')});
+    const bets = await this.exotic.userBets(this.signers[0].address, 3, 1);
+    expect(bets.length).to.equal(3);
+  });
 
 });
