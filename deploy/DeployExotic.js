@@ -26,14 +26,22 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
 
   const exotic = await deploy('Exotic', {
     contract: 'Exotic',
-    args: [
-        randomProviderAddress,
-        fee,
-        jackpotContribution,
-        feeAddress,
-        jackpotAddress
-    ],
     from: deployer,
+    proxy: {
+      proxyContract: "OpenZeppelinTransparentProxy",
+      execute: {
+        init: {
+          methodName: "initialize",
+          args: [
+            randomProviderAddress,
+            fee,
+            jackpotContribution,
+            feeAddress,
+            jackpotAddress
+          ],
+        },
+      },
+    },
     log: true,
   });
 

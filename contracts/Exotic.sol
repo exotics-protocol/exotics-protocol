@@ -2,14 +2,13 @@
 pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 
-import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import "./interfaces/IRandomProvider.sol";
 
 
 /// @title An betting game with exotic bet types
-contract Exotic {
+contract Exotic is Initializable {
 
     IRandomProvider public randomProvider;
 
@@ -19,7 +18,7 @@ contract Exotic {
     uint256 public constant frequency = 3 minutes;
 
     /// @notice The datetime of the first race.
-    uint256 public immutable start;
+    uint256 public start;
 
     /// @notice Fee paramaters.
     uint256 public fee;  // House take in bps
@@ -80,13 +79,13 @@ contract Exotic {
         uint256 result
     );
 
-    constructor(
+    function initialize(
         address _randomProviderAddress,
         uint256 _fee,
         uint256 _jackpotContribution,
         address _feeAddress,
         address _jackpotAddress
-    ) {
+    ) public initializer {
         start = block.timestamp;
         randomProvider = IRandomProvider(_randomProviderAddress);
         fee = _fee;
