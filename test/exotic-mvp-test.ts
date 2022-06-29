@@ -49,7 +49,7 @@ describe.only("Exotics MVP test case", function () {
     expect(
       await this.signers[0].getBalance()
     ).to.be.closeTo(
-      balanceBefore.add(ethers.utils.parseEther('1')),
+      balanceBefore.add(ethers.utils.parseEther('0.99')),
       ethers.utils.parseEther('0.001')
     );
   });
@@ -94,7 +94,7 @@ describe.only("Exotics MVP test case", function () {
     expect(
       await winner.getBalance()
     ).to.be.closeTo(
-      winnerBefore.add(ethers.utils.parseEther('2')),
+      winnerBefore.add(ethers.utils.parseEther('1.98')),
       ethers.utils.parseEther('0.001')
     );
     expect(
@@ -124,9 +124,23 @@ describe.only("Exotics MVP test case", function () {
 
     const betOne = await this.exotic.userBet(this.signers[0].address, 0);
     expect(betOne[0]).to.equal(nextRace);
-    expect(betOne[1]).to.equal(ethers.utils.parseEther('1'));
+    expect(betOne[1]).to.equal(ethers.utils.parseEther('0.99'));
     expect(betOne[2][0]).to.equal(0);
     expect(betOne[3]).to.equal(false);
   });
+
+  it("should not allow bet on invalid raceId", async function () {
+	const nextRace = await this.exotic.nextRaceId();
+	await expect(this.exotic.placeBet(nextRace + 1, [0], {value: ethers.utils.parseEther('1')})).to.be.reverted;
+  });
+
+  it("should send the fee and jackpot contribution on bet", async function () {
+	const nextRace = await this.exotic.nextRaceId();
+	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
+    expect(
+      await ethers.provider.getBalance("0x1604F1c0aF9765D940519cd2593292b3cE3Ba3CE")
+    ).to.eq(ethers.utils.parseEther('0.01'));
+  });
+
 
 });

@@ -26,6 +26,12 @@ contract Exotic is VRFConsumerBaseV2 {
     /// @notice The datetime of the first race.
     uint256 public immutable start;
 
+    /// @notice Fee paramaters.
+    uint256 public fee;  // House take in bps
+    uint256 public jackpotContribution;  // Jackpot contribution in bps
+    address public feeAddress;
+    address public jackpotAddress;
+
     struct Bet {
         uint256 raceId;
         uint256 amount;
@@ -35,7 +41,6 @@ contract Exotic is VRFConsumerBaseV2 {
     }
 
     struct Race {
-        uint256 fee;  // House take in bps
         uint256 totalWagered;
         uint256 paid;
         uint256 result;
@@ -80,10 +85,21 @@ contract Exotic is VRFConsumerBaseV2 {
         uint256 result
     );
 
-    constructor(uint64 subscriptionId, address _vrfCoordinator) VRFConsumerBaseV2(_vrfCoordinator) {
+    constructor(
+        uint64 subscriptionId,
+        address _vrfCoordinator,
+        uint256 _fee,
+        uint256 _jackpotContribution,
+        address _feeAddress,
+        address _jackpotAddress
+    ) VRFConsumerBaseV2(_vrfCoordinator) {
 		COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
         start = block.timestamp;
 		s_subscriptionId = subscriptionId;
+        fee = _fee;
+        jackpotContribution = _jackpotContribution;
+        feeAddress = _feeAddress;
+        jackpotAddress = _jackpotAddress;
     }
 
     /// @notice Return the amount of bets a user has made.
@@ -127,28 +143,34 @@ contract Exotic is VRFConsumerBaseV2 {
         validateRaceID(raceId);
         require(prediction.length == 1, "Only win bet currently supported");
 
+        uint256 betFee = msg.value * fee / 10000;
+        uint256 jackpotFee = msg.value * jackpotContribution / 10000;
+        uint256 betValue = msg.value - (betFee + jackpotFee);
+
         // Create the bet.
         Bet memory _bet;
         _bet.raceId = raceId;
-        _bet.amount = msg.value;
+        _bet.amount = betValue;
         _bet.account = msg.sender;
         bet[msg.sender].push(_bet);
         bet[msg.sender][bet[msg.sender].length - 1].place.push(prediction[0]);
 
         // Update the race.
         Race storage _race = race[raceId];
-        _race.weights[0][prediction[0]] += msg.value;
-        _race.totalWagered += msg.value;
+        _race.weights[0][prediction[0]] += betValue;
+        _race.totalWagered += betValue;
 
         // Internal accounting.
-        balance += msg.value;
+        balance += betValue;
         emit Wagered(
             raceId,
             msg.sender,
-            msg.value,
+            betValue,
             prediction,
             balance
         );
+        payable(feeAddress).transfer(betFee);
+        payable(jackpotAddress).transfer(jackpotFee);
         return bet[msg.sender].length - 1;
     }
 
