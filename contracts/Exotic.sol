@@ -5,18 +5,13 @@ import "hardhat/console.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
-/// @title An betting game with exotic bet types
-contract Exotic is VRFConsumerBaseV2 {
+import "./interfaces/IRandomProvider.sol";
 
-	// Chainlink VRF required variables.
-    VRFCoordinatorV2Interface COORDINATOR;
-    uint64 s_subscriptionId;
-    address vrfCoordinator;
-    // see https://docs.chain.link/docs/vrf-contracts/#configurations
-    bytes32 keyHash = 0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61;
-    uint32 callbackGasLimit = 200000;
-    uint16 requestConfirmations = 3;
-    uint32 numWords =  1;
+
+/// @title An betting game with exotic bet types
+contract Exotic {
+
+    IRandomProvider public randomProvider;
 
     uint256 private balance;
 
@@ -86,16 +81,14 @@ contract Exotic is VRFConsumerBaseV2 {
     );
 
     constructor(
-        uint64 subscriptionId,
-        address _vrfCoordinator,
+        address _randomProviderAddress,
         uint256 _fee,
         uint256 _jackpotContribution,
         address _feeAddress,
         address _jackpotAddress
-    ) VRFConsumerBaseV2(_vrfCoordinator) {
-		COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
+    ) {
         start = block.timestamp;
-		s_subscriptionId = subscriptionId;
+        randomProvider = IRandomProvider(_randomProviderAddress);
         fee = _fee;
         jackpotContribution = _jackpotContribution;
         feeAddress = _feeAddress;
@@ -203,20 +196,14 @@ contract Exotic is VRFConsumerBaseV2 {
         payable(msg.sender).transfer(_payout);
     }
 
-    /// @notice End the race and request result from VRF.
-    function endRace(uint256 raceId) external {
+    /// @notice Start the race and request result from VRF.
+    function startRace(uint256 raceId) external {
         validateRaceID(raceId);
         require(block.timestamp > raceId + frequency, "Race not finished");
         Race storage _race = race[raceId];
         require(_race.requestId == 0, "Result already requested");
         require(_race.result == 0, "Race result already fulfilled");
-	 	uint256 s_requestId = COORDINATOR.requestRandomWords(
-		  keyHash,
-		  s_subscriptionId,
-		  requestConfirmations,
-		  callbackGasLimit,
-		  numWords
-		);
+	 	uint256 s_requestId = randomProvider.requestRandomWords();
         _race.requestId = s_requestId;
         requestIdRace[s_requestId] = raceId;
         emit RaceStart(
@@ -225,11 +212,12 @@ contract Exotic is VRFConsumerBaseV2 {
         );
     }
 
-    /// @notice VRF callback function.
-    function fulfillRandomWords(
+    /// @notice End the race and set the result.
+    function endRace(
         uint256 requestId,
         uint256[] memory randomWords
-    ) internal override {
+    ) external {
+        require(msg.sender == address(randomProvider), "Not Allowed randomProvider");
         uint256 raceId = requestIdRace[requestId];
         Race storage _race = race[raceId];
         require(_race.result == 0, "Randomness already fulfilled");
