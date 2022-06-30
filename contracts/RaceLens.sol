@@ -77,8 +77,8 @@ contract RaceLens is Ownable {
             end = resultsPerPage * page;
         }
         FullBet[] memory result = new FullBet[](end - start);
-
         uint256 i;
+        uint256 counter;
         for(i = start; i < end; i++) {
             IExotic.Bet memory _bet = exotic.userBet(user, i);
             FullBet memory _returnBet;
@@ -92,7 +92,8 @@ contract RaceLens is Ownable {
             FullRace memory _race = race(_bet.raceId);
             _returnBet.raceResult = _race.raceResult;
             _returnBet.raceFinished = _race.result == 0 ? false : true;
-            result[i] = _returnBet;
+            result[counter] = _returnBet;
+            counter += 1;
         }
         return result;
     }
