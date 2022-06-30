@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { deployments, ethers, network } from "hardhat";
 
-describe.only("Exotics MVP test case", function () {
+describe("Exotics MVP test case", function () {
   before(async function () {
     this.signers = await ethers.getSigners();
   });
@@ -207,6 +207,9 @@ describe.only("Exotics MVP test case", function () {
     bets = await this.lens.userBets(this.signers[0].address, 2, 1);
     expect(bets.length).to.equal(2);
     expect(bets[0][7]).to.equal(true);
+
+    bets = await this.lens.userBets(this.signers[0].address, 1, 2);
+    expect(bets.length).to.eq(1)
   });
 
   it("should respect the maxBet parameter", async function () {
