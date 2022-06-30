@@ -95,7 +95,7 @@ contract Exotic is Initializable {
     }
 
     /// @notice Return the amount of bets a user has made.
-    function userBetCount(address user) external view returns (uint256) {
+    function userBetCount(address user) public view returns (uint256) {
         return bet[user].length;
     }
 
@@ -103,21 +103,9 @@ contract Exotic is Initializable {
     function userBet(
         address user, uint256 betId
     ) external view returns (
-        uint256, uint256, uint256[] memory, bool
+        Bet memory
     ) {
-        Bet memory _bet = bet[user][betId];
-        return (_bet.raceId, _bet.amount, _bet.place, _bet.paid);
-    }
-
-    function userBets(
-        address user, uint256 resultsPerPage, uint256 page
-    ) external view returns(Bet[] memory) {
-        Bet[] memory result = new Bet[](resultsPerPage);
-        uint256 i;
-        for(i = resultsPerPage * page - resultsPerPage; i < resultsPerPage * page; i++) {
-            result[i] = bet[user][i];
-        }
-        return result;
+        return bet[user][betId];
     }
 
 	/// @notice The time of the next race to take place.

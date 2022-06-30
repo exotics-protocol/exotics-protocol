@@ -7,9 +7,10 @@ describe.only("Exotics MVP test case", function () {
   });
 
   beforeEach(async function () {
-    await deployments.fixture(["Exotic"]);
+    await deployments.fixture(["RaceLens"]);
     this.exotic = await ethers.getContract("Exotic");
 	this.vrf = await ethers.getContract('MockVRFCoordinator');
+    this.lens = await ethers.getContract('RaceLens');
   });
 
   it("should take win bets and give correct odds", async function () {
@@ -125,8 +126,9 @@ describe.only("Exotics MVP test case", function () {
     const betOne = await this.exotic.userBet(this.signers[0].address, 0);
     expect(betOne[0]).to.equal(nextRace);
     expect(betOne[1]).to.equal(ethers.utils.parseEther('0.99'));
-    expect(betOne[2][0]).to.equal(0);
-    expect(betOne[3]).to.equal(false);
+    expect(betOne[2]).to.equal(this.signers[0].address);
+    expect(betOne[3][0]).to.equal(0);
+    expect(betOne[4]).to.equal(false);
   });
 
   it("should not allow bet on invalid raceId", async function () {
@@ -142,13 +144,69 @@ describe.only("Exotics MVP test case", function () {
     ).to.eq(ethers.utils.parseEther('0.01'));
   });
 
+  it("should return race from lens contract", async function (){
+	const nextRace = await this.exotic.nextRaceId();
+	await this.exotic.placeBet(nextRace, [1], {value: ethers.utils.parseEther('1')});
+
+    let race = await this.lens.race(nextRace)
+    expect(race.raceResult).to.eql([
+      ethers.BigNumber.from(0),
+      ethers.BigNumber.from(0),
+      ethers.BigNumber.from(0),
+      ethers.BigNumber.from(0),
+      ethers.BigNumber.from(0),
+      ethers.BigNumber.from(0),
+    ]);
+
+	await network.provider.send("evm_increaseTime", [1199])
+	await this.exotic.startRace(nextRace);
+	await this.vrf.fulfill();
+
+    race = await this.lens.race(nextRace)
+    expect(race.raceResult).to.eql([
+      ethers.BigNumber.from(1),
+      ethers.BigNumber.from(0),
+      ethers.BigNumber.from(0),
+      ethers.BigNumber.from(0),
+      ethers.BigNumber.from(0),
+      ethers.BigNumber.from(0),
+    ]);
+
+  });
+
   it("should return paginated list of bets", async function () {
 	const nextRace = await this.exotic.nextRaceId();
 	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
 	await this.exotic.placeBet(nextRace, [1], {value: ethers.utils.parseEther('1')});
 	await this.exotic.placeBet(nextRace, [2], {value: ethers.utils.parseEther('1')});
-    const bets = await this.exotic.userBets(this.signers[0].address, 3, 1);
+    const bets = await this.lens.userBets(this.signers[0].address, 3, 1);
     expect(bets.length).to.equal(3);
+  });
+
+  it("should trim users bet list to max available", async function () {
+	const nextRace = await this.exotic.nextRaceId();
+	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
+	await this.exotic.placeBet(nextRace, [1], {value: ethers.utils.parseEther('1')});
+	await this.exotic.placeBet(nextRace, [2], {value: ethers.utils.parseEther('1')});
+    let bets;
+    bets = await this.lens.userBets(this.signers[0].address, 2, 1);
+    expect(bets.length).to.equal(2);
+    expect(bets[0][7]).to.equal(false);
+
+    bets = await this.lens.userBets(this.signers[0].address, 10, 1);
+    expect(bets.length).to.equal(3);
+    bets = await this.lens.userBets(this.signers[0].address, 4, 2);
+    expect(bets.length).to.equal(0);
+    bets = await this.lens.userBets(this.signers[0].address, 10, 3);
+    expect(bets.length).to.equal(0);
+
+	await network.provider.send("evm_increaseTime", [1199])
+	await this.exotic.startRace(nextRace);
+	await this.vrf.fulfill();
+
+    bets = await this.lens.userBets(this.signers[0].address, 2, 1);
+    expect(bets.length).to.equal(2);
+    expect(bets[0][7]).to.equal(true);
   });
 
 });
