@@ -52,6 +52,8 @@ contract Exotic is Initializable, OwnableUpgradeable {
     /// @notice used internally to map races to VRF requests.
     mapping(uint256 => uint256) private requestIdRace;
 
+    mapping(uint256 => mapping(address => uint256[])) public betsPerRace;
+
     /// @notice emitted when a new bet is placed on a race.
     event Wagered(
         uint256 indexed raceId,
@@ -223,7 +225,18 @@ contract Exotic is Initializable, OwnableUpgradeable {
         }
         payable(feeAddress).transfer(betFee);
         payable(jackpotAddress).transfer(jackpotFee);
+        betsPerRace[raceId][msg.sender].push(bet[msg.sender].length - 1);
         return bet[msg.sender].length - 1;
+    }
+
+    function betsOnRace(address user, uint256 raceId) external view returns (Bet[] memory) {
+        uint256[] memory betIds = betsPerRace[raceId][user];
+        uint256 i;
+        Bet[] memory result = new Bet[](betIds.length);
+        for (i = 0; i < betIds.length; i++){
+            result[i] = bet[user][betIds[i]];
+        }
+        return result;
     }
 
     /// @notice Cash out a winning bet.
