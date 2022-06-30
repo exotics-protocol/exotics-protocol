@@ -83,6 +83,10 @@ contract Exotic is Initializable, OwnableUpgradeable {
     );
 
     event MaxBetUpdated(uint256 maxBet);
+    event RevenueAddressUpdated(address indexed feeAddress);
+    event RevenueFeeUpdated(uint256 fee);
+    event POLAddressUpdated(address indexed feeAddress);
+    event POLFeeUpdated(uint256 fee);
 
     function initialize(
         address _randomProviderAddress,
@@ -105,6 +109,28 @@ contract Exotic is Initializable, OwnableUpgradeable {
     function updateMaxBet(uint256 _maxBet) external onlyOwner {
         maxBet = _maxBet;
         emit MaxBetUpdated(maxBet);
+    }
+
+    function updateRevenueFee(uint256 _fee) external onlyOwner {
+        fee = _fee;
+        emit RevenueFeeUpdated(_fee);
+    }
+
+    function updateRevenueAddress(address _feeAddress) external onlyOwner {
+        require(_feeAddress != address(0), "Fee address can't be 0");
+        feeAddress = _feeAddress;
+        emit RevenueAddressUpdated(_feeAddress);
+    }
+
+    function updatePOLFee(uint256 _fee) external onlyOwner {
+        jackpotContribution = _fee;
+        emit POLFeeUpdated(_fee);
+    }
+
+    function updatePOLAddress(address _feeAddress) external onlyOwner {
+        require(_feeAddress != address(0), "Fee address can't be 0");
+        jackpotAddress = _feeAddress;
+        emit POLAddressUpdated(_feeAddress);
     }
 
     /// @notice Return the amount of bets a user has made.
