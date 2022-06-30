@@ -3,12 +3,13 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "./interfaces/IRandomProvider.sol";
 
 
 /// @title An betting game with exotic bet types
-contract Exotic is Initializable {
+contract Exotic is Initializable, OwnableUpgradeable {
 
     IRandomProvider public randomProvider;
 
@@ -25,6 +26,8 @@ contract Exotic is Initializable {
     uint256 public jackpotContribution;  // Jackpot contribution in bps
     address public feeAddress;
     address public jackpotAddress;
+
+    uint256 public maxBet;
 
     struct Bet {
         uint256 raceId;
@@ -79,12 +82,15 @@ contract Exotic is Initializable {
         uint256 result
     );
 
+    event MaxBetUpdated(uint256 maxBet);
+
     function initialize(
         address _randomProviderAddress,
         uint256 _fee,
         uint256 _jackpotContribution,
         address _feeAddress,
-        address _jackpotAddress
+        address _jackpotAddress,
+        uint256 _maxBet
     ) public initializer {
         start = block.timestamp;
         randomProvider = IRandomProvider(_randomProviderAddress);
@@ -92,6 +98,13 @@ contract Exotic is Initializable {
         jackpotContribution = _jackpotContribution;
         feeAddress = _feeAddress;
         jackpotAddress = _jackpotAddress;
+        maxBet = _maxBet;
+        __Ownable_init();
+    }
+
+    function updateMaxBet(uint256 _maxBet) external onlyOwner {
+        maxBet = _maxBet;
+        emit MaxBetUpdated(maxBet);
     }
 
     /// @notice Return the amount of bets a user has made.
@@ -137,6 +150,8 @@ contract Exotic is Initializable {
         uint256 betFee = msg.value * fee / 10000;
         uint256 jackpotFee = msg.value * jackpotContribution / 10000;
         uint256 betValue = msg.value - (betFee + jackpotFee);
+
+        require(betValue <= maxBet, "Bet above maxBet limit");
 
         // Create the bet.
         Bet memory _bet;
