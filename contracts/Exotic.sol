@@ -39,7 +39,7 @@ contract Exotic is Initializable {
         uint256 paid;
         uint256 result;
         uint256 requestId;
-        uint256[6][3] weights;
+        uint256[6] winWeights;
     }
 
     /// @notice The state for each race.
@@ -120,10 +120,10 @@ contract Exotic is Initializable {
         uint256 total;
         uint256 i;
         for (i = 0; i < 6; i++) {
-            total += _race.weights[0][i];
+            total += _race.winWeights[i];
         }
         if (total == 0) return total;
-        return (_race.weights[0][result[0]] * 1e10) / total;
+        return (_race.winWeights[result[0]] * 1e10) / total;
     }
 
     /// @notice Place a bet.
@@ -148,7 +148,7 @@ contract Exotic is Initializable {
 
         // Update the race.
         Race storage _race = race[raceId];
-        _race.weights[0][prediction[0]] += betValue;
+        _race.winWeights[prediction[0]] += betValue;
         _race.totalWagered += betValue;
 
         // Internal accounting.
@@ -245,16 +245,16 @@ contract Exotic is Initializable {
         uint256 total;
         uint256 i;
         for (i = 0; i < 6; i++) {
-            total += _race.weights[0][i];
+            total += _race.winWeights[i];
         }
         uint256 number = _race.result % total;
 
         uint256 j;
         for (j = 0; j < 6; j++) {
-            if (_race.weights[0][j] > number) {
+            if (_race.winWeights[j] > number) {
                 result[0] = j;
             } else {
-                number -= _race.weights[0][j];
+                number -= _race.winWeights[j];
             }
         }
         return result;
