@@ -285,21 +285,39 @@ contract Exotic is Initializable, OwnableUpgradeable {
     function raceResult(uint256 raceId) public view returns (uint256[6] memory) {
         Race memory _race = race[raceId];
         require(_race.result != 0, "Race is not finished");
-        uint256[6] memory result;
+
+        uint256 i;
+
+        // Hack add 1 to each weight to ensure stuff, ok
+        uint256[6] memory weights = _race.winWeights;
+        for (i = 0; i < 6; i++) {
+            weights[i] += 1;
+        }
 
         uint256 total;
-        uint256 i;
         for (i = 0; i < 6; i++) {
             total += _race.winWeights[i];
         }
-        uint256 number = _race.result % total;
 
+        uint256[6] memory result;
         uint256 j;
-        for (j = 0; j < 6; j++) {
-            if (_race.winWeights[j] > number) {
-                result[0] = j;
+        uint256 number;
+
+        for (i = 0; i < 6; i++) {
+            if (total == 0) {
+                number = 0;
             } else {
-                number -= _race.winWeights[j];
+                number = _race.result % total;
+            }
+            for (j = 0; j < 6; j++) {
+                if (weights[j] > number) {
+                    total -= weights[j];
+                    weights[j] = 0;
+                    result[i] = j;
+                    break;
+                } else {
+                    number -= weights[j];
+                }
             }
         }
         return result;
