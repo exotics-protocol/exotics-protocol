@@ -209,4 +209,18 @@ describe.only("Exotics MVP test case", function () {
     expect(bets[0][7]).to.equal(true);
   });
 
+  it("should respect the maxBet parameter", async function () {
+	const nextRace = await this.exotic.nextRaceId();
+	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
+    await expect(
+	    this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1000')})
+    ).to.be.reverted;
+    await this.exotic.updateMaxBet(ethers.utils.parseEther("5"));
+    await expect(
+	    this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('6')})
+    ).to.be.reverted;
+	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('4')});
+	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('5')});
+  });
+
 });
