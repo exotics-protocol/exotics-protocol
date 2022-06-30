@@ -223,4 +223,14 @@ describe.only("Exotics MVP test case", function () {
 	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('5')});
   });
 
+  it("should auto start race if bet placed after frequency", async function (){
+	const nextRace = await this.exotic.nextRaceId();
+	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
+	await network.provider.send("evm_increaseTime", [1199])
+	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
+	await this.vrf.fulfill();
+    const race = await this.exotic.race(nextRace);
+    expect(race[2]).to.be.gt(0);
+  });
+
 });

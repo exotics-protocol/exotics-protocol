@@ -139,6 +139,22 @@ contract Exotic is Initializable, OwnableUpgradeable {
         return (_race.winWeights[result[0]] * 1e10) / total;
     }
 
+    /// @notice Start the race and request result from VRF.
+    function startRace(uint256 raceId) public {
+        validateRaceID(raceId);
+        require(block.timestamp > raceId + frequency, "Race not finished");
+        Race storage _race = race[raceId];
+        require(_race.requestId == 0, "Result already requested");
+        require(_race.result == 0, "Race result already fulfilled");
+	 	uint256 s_requestId = randomProvider.requestRandomWords();
+        _race.requestId = s_requestId;
+        requestIdRace[s_requestId] = raceId;
+        emit RaceStart(
+            raceId,
+            balance
+        );
+    }
+
     /// @notice Place a bet.
     function placeBet(
         uint256 raceId,
@@ -175,6 +191,10 @@ contract Exotic is Initializable, OwnableUpgradeable {
             prediction,
             balance
         );
+
+        if (raceId + frequency < block.timestamp) {
+            startRace(raceId);
+        }
         payable(feeAddress).transfer(betFee);
         payable(jackpotAddress).transfer(jackpotFee);
         return bet[msg.sender].length - 1;
@@ -207,22 +227,6 @@ contract Exotic is Initializable, OwnableUpgradeable {
             _payout
         );
         payable(msg.sender).transfer(_payout);
-    }
-
-    /// @notice Start the race and request result from VRF.
-    function startRace(uint256 raceId) external {
-        validateRaceID(raceId);
-        require(block.timestamp > raceId + frequency, "Race not finished");
-        Race storage _race = race[raceId];
-        require(_race.requestId == 0, "Result already requested");
-        require(_race.result == 0, "Race result already fulfilled");
-	 	uint256 s_requestId = randomProvider.requestRandomWords();
-        _race.requestId = s_requestId;
-        requestIdRace[s_requestId] = raceId;
-        emit RaceStart(
-            raceId,
-            balance
-        );
     }
 
     /// @notice End the race and set the result.
