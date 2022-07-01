@@ -176,33 +176,54 @@ describe("Exotics MVP test case", function () {
     expect(bets.length).to.equal(3);
   });
 
-  it("should trim users bet list to max available", async function () {
+  it.only("should trim users bet list to max available", async function () {
 	const nextRace = await this.exotic.nextRaceId();
 	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
 	await this.exotic.placeBet(nextRace, [1], {value: ethers.utils.parseEther('1')});
 	await this.exotic.placeBet(nextRace, [2], {value: ethers.utils.parseEther('1')});
     let bets;
-    bets = await this.lens.userBets(this.signers[0].address, 2, 1);
-    expect(bets.length).to.equal(2);
-    expect(bets[0][7]).to.equal(false);
-
-    bets = await this.lens.userBets(this.signers[0].address, 10, 1);
+    bets = await this.lens.userBets(this.signers[0].address, 3, 0);
+    // All bets
     expect(bets.length).to.equal(3);
-    bets = await this.lens.userBets(this.signers[0].address, 4, 2);
-    expect(bets.length).to.equal(0);
+    expect(bets[0][3][0]).to.equal(2);
+    expect(bets[1][3][0]).to.equal(1);
+    expect(bets[2][3][0]).to.equal(0);
+
+    bets = await this.lens.userBets(this.signers[0].address, 2, 0);
+    // Most recent 2
+    expect(bets.length).to.equal(2);
+    expect(bets[0][3][0]).to.equal(2);
+    expect(bets[1][3][0]).to.equal(1);
+
+    bets = await this.lens.userBets(this.signers[0].address, 2, 1);
+    // Last bet
+    expect(bets.length).to.equal(1);
+    expect(bets[0][3][0]).to.equal(0);
+
+    await this.exotic.placeBet(nextRace, [3], {value: ethers.utils.parseEther('1')});
+	await this.exotic.placeBet(nextRace, [4], {value: ethers.utils.parseEther('1')});
+	await this.exotic.placeBet(nextRace, [5], {value: ethers.utils.parseEther('1')});
+
+    bets = await this.lens.userBets(this.signers[0].address, 10, 0);
+    expect(bets.length).to.equal(6);
+    expect(bets[0][3][0]).to.equal(5);
+    expect(bets[1][3][0]).to.equal(4);
+    expect(bets[2][3][0]).to.equal(3);
+    expect(bets[3][3][0]).to.equal(2);
+    expect(bets[4][3][0]).to.equal(1);
+    expect(bets[5][3][0]).to.equal(0);
+
     bets = await this.lens.userBets(this.signers[0].address, 10, 3);
     expect(bets.length).to.equal(0);
 
-	await network.provider.send("evm_increaseTime", [1199])
-	await this.exotic.startRace(nextRace);
-	await this.vrf.fulfill();
-
     bets = await this.lens.userBets(this.signers[0].address, 2, 1);
     expect(bets.length).to.equal(2);
-    expect(bets[0][7]).to.equal(true);
+    expect(bets[0][3][0]).to.equal(3);
+    expect(bets[1][3][0]).to.equal(2);
 
-    bets = await this.lens.userBets(this.signers[0].address, 1, 2);
-    expect(bets.length).to.eq(1)
+    bets = await this.lens.userBets(this.signers[0].address, 5, 1);
+    expect(bets.length).to.equal(1);
+    expect(bets[0][3][0]).to.equal(0);
   });
 
   it("should respect the maxBet parameter", async function () {

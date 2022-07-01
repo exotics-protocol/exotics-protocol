@@ -62,27 +62,31 @@ contract RaceLens is Ownable {
     ) public view returns (
         FullBet[] memory
     ) {
-        // We want the user bets from newest to oldest.
         uint256 betCount = exotic.userBetCount(user);
         uint256 start;
         uint256 end;
 
-        start = resultsPerPage * page;
-        end = resultsPerPage * page - resultsPerPage;
-        if (betCount < end) {
+        // requesting past what we have.
+        if ((resultsPerPage * page) > betCount) {
             start = 0;
             end = 0;
+        } else {
+            start = betCount - (resultsPerPage * page);
+            if (start > resultsPerPage) {
+                end = start - resultsPerPage;
+            } else {
+                end = 0;
+            }
+            if (start > betCount) {
+                end = betCount < resultsPerPage ? 0 : betCount - resultsPerPage;
+                start = betCount;
+            }
         }
-        if (start > betCount) {
-            end = betCount < resultsPerPage ? 0 : end - (start - betCount);
-            start = betCount;
-        }
-
         FullBet[] memory result = new FullBet[](start - end);
         uint256 i;
         uint256 counter;
         for(i = start; i > end ; i--) {
-            IExotic.Bet memory _bet = exotic.userBet(user, i-1);
+            IExotic.Bet memory _bet = exotic.userBet(user, i - 1);
             FullBet memory _returnBet;
             _returnBet.raceId = _bet.raceId;
             _returnBet.amount = _bet.amount;
