@@ -172,11 +172,11 @@ describe("Exotics MVP test case", function () {
 	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
 	await this.exotic.placeBet(nextRace, [1], {value: ethers.utils.parseEther('1')});
 	await this.exotic.placeBet(nextRace, [2], {value: ethers.utils.parseEther('1')});
-    const bets = await this.lens.userBets(this.signers[0].address, 3, 1);
+    const bets = await this.lens.userBets(this.signers[0].address, 3, 0);
     expect(bets.length).to.equal(3);
   });
 
-  it.only("should trim users bet list to max available", async function () {
+  it("should trim users bet list to max available", async function () {
 	const nextRace = await this.exotic.nextRaceId();
 	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
 	await this.exotic.placeBet(nextRace, [1], {value: ethers.utils.parseEther('1')});
