@@ -7,10 +7,14 @@ describe("Exotics MVP test case", function () {
   });
 
   beforeEach(async function () {
-    await deployments.fixture(["RaceLens"]);
+    await deployments.fixture(["RaceLens", "Rewarder"]);
     this.exotic = await ethers.getContract("Exotic");
 	this.vrf = await ethers.getContract('MockVRFCoordinator');
     this.lens = await ethers.getContract('RaceLens');
+    this.rewarder = await ethers.getContract("Rewarder");
+    this.xtc = await ethers.getContract('XTCToken');
+    // Top up the rewarder.
+    await this.xtc.transfer(this.rewarder.address, ethers.utils.parseEther("1000000"));
   });
 
   it("should take win bets and give correct odds", async function () {
@@ -259,6 +263,22 @@ describe("Exotics MVP test case", function () {
 	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
     bets = await this.exotic.betsOnRace(this.signers[0].address, nextRace);
     expect(bets.length).to.eq(3);
+  });
+
+  it("should give a reward on bet", async function () {
+	const nextRace = await this.exotic.nextRaceId();
+	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
+    expect(await this.rewarder.claimable(this.signers[0].address)).to.equal(ethers.utils.parseEther("1"));
+	await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
+    expect(await this.rewarder.claimable(this.signers[0].address)).to.equal(ethers.utils.parseEther("2"));
+    const balanceBefore = await this.xtc.balanceOf(this.signers[0].address);
+    await this.rewarder.claim();
+    expect(
+      await this.xtc.balanceOf(this.signers[0].address)
+    ).to.be.equal(
+      balanceBefore.add(ethers.utils.parseEther('2')),
+    );
+    expect(await this.rewarder.claimable(this.signers[0].address)).to.equal(ethers.utils.parseEther("0"));
   });
 
 });

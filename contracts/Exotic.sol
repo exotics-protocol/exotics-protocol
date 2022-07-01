@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "./interfaces/IRandomProvider.sol";
+import "./interfaces/IRewarder.sol";
 
 
 /// @title An betting game with exotic bet types
@@ -28,6 +29,8 @@ contract Exotic is Initializable, OwnableUpgradeable {
     address public jackpotAddress;
 
     uint256 public maxBet;
+
+    IRewarder public rewarder;
 
     struct Bet {
         uint256 raceId;
@@ -89,6 +92,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
     event RevenueFeeUpdated(uint256 fee);
     event POLAddressUpdated(address indexed feeAddress);
     event POLFeeUpdated(uint256 fee);
+    event RewarderUpdated(address indexed rewarder);
 
     function initialize(
         address _randomProviderAddress,
@@ -106,6 +110,11 @@ contract Exotic is Initializable, OwnableUpgradeable {
         jackpotAddress = _jackpotAddress;
         maxBet = _maxBet;
         __Ownable_init();
+    }
+
+    function updateRewarder(IRewarder _rewarder) external onlyOwner {
+        rewarder = _rewarder;
+        emit RewarderUpdated(address(_rewarder));
     }
 
     function updateMaxBet(uint256 _maxBet) external onlyOwner {
@@ -222,6 +231,9 @@ contract Exotic is Initializable, OwnableUpgradeable {
 
         if (raceId + frequency < block.timestamp) {
             startRace(raceId);
+        }
+        if (address(rewarder) != address(0)) {
+            rewarder.addReward(msg.sender, msg.value);
         }
         payable(feeAddress).transfer(betFee);
         payable(jackpotAddress).transfer(jackpotFee);
