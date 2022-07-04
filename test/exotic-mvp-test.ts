@@ -13,6 +13,7 @@ describe("Exotics MVP test case", function () {
     this.lens = await ethers.getContract('RaceLens');
     this.rewarder = await ethers.getContract("Rewarder");
     this.xtc = await ethers.getContract('XTCToken');
+    this.equityFarm = await ethers.getContract('EquityFarm');
     // Top up the rewarder.
     await this.xtc.transfer(this.rewarder.address, ethers.utils.parseEther("1000000"));
   });
@@ -145,7 +146,10 @@ describe("Exotics MVP test case", function () {
     await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
     expect(
       await ethers.provider.getBalance("0x1604F1c0aF9765D940519cd2593292b3cE3Ba3CE")
-    ).to.eq(ethers.utils.parseEther('0.01'));
+    ).to.eq(ethers.utils.parseEther('0.005'));
+    expect(
+      await ethers.provider.getBalance(this.equityFarm.address)
+    ).to.eq(ethers.utils.parseEther('0.005'));
   });
 
   it("should return race from lens contract", async function (){
@@ -279,6 +283,16 @@ describe("Exotics MVP test case", function () {
       balanceBefore.add(ethers.utils.parseEther('2')),
     );
     expect(await this.rewarder.claimable(this.signers[0].address)).to.equal(ethers.utils.parseEther("0"));
+  });
+
+  it("should distribute fees to stakers", async function () {
+    // Deposit to equity farm.
+    await this.xtc.approve(this.equityFarm.address, ethers.utils.parseEther("100"));
+    await this.equityFarm.deposit(ethers.utils.parseEther("100"));
+    expect(await this.equityFarm.pendingReward(this.signers[0].address)).to.equal(0);
+    const nextRace = await this.exotic.nextRaceId();
+    await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
+    expect(await this.equityFarm.pendingReward(this.signers[0].address)).to.equal(ethers.utils.parseEther('0.005'));
   });
 
 });

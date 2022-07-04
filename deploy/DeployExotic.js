@@ -13,17 +13,16 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
     maxBet = ethers.utils.parseEther("1");
   }
   else if (chainId == 43113) {
-    feeAddress = '0x1604F1c0aF9765D940519cd2593292b3cE3Ba3CE';
     jackpotAddress = '0x1604F1c0aF9765D940519cd2593292b3cE3Ba3CE';
     maxBet = ethers.utils.parseEther("10");
   }
   else if (chainId == 31337) {
-    feeAddress = '0x1604F1c0aF9765D940519cd2593292b3cE3Ba3CE';
     jackpotAddress = '0x1604F1c0aF9765D940519cd2593292b3cE3Ba3CE';
     maxBet = ethers.utils.parseEther("100");
   }
 
   randomProviderAddress = (await deployments.get('RandomProvider')).address;
+  feeAddress = (await deployments.get('EquityFarm')).address;
 
   const exotic = await deploy('Exotic', {
     contract: 'Exotic',
@@ -55,4 +54,4 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
 };
 
 module.exports.tags = ["Exotic"];
-module.exports.dependencies = ['RandomProvider']
+module.exports.dependencies = ['RandomProvider', "EquityFarm"]
