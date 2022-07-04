@@ -179,7 +179,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
     /// @notice Start the race and request result from VRF.
     function startRace(uint256 raceId) public {
         validateRaceID(raceId);
-        require(block.timestamp > raceId + frequency, "Race not finished");
+        require(block.timestamp > raceId, "Race not finished");
         Race storage _race = race[raceId];
         require(_race.requestId == 0, "Result already requested");
         require(_race.result == 0, "Race result already fulfilled");
@@ -229,7 +229,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
             balance
         );
 
-        if (raceId + frequency < block.timestamp) {
+        if (raceId < block.timestamp) {
             startRace(raceId);
         }
         if (address(rewarder) != address(0)) {
