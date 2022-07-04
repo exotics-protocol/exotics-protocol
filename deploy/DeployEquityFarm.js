@@ -3,15 +3,13 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
   const {deployer} = await getNamedAccounts();
   const chainId = await getChainId();
 
-  const tokenAddress = (await deployments.get("XTCToken")).address;
 
   const rewarder = await deploy('EquityFarm', {
     contract: 'EquityFarm',
-    args: [tokenAddress],
+    args: [],
     from: deployer,
     log: true,
   });
 };
 
 module.exports.tags = ["EquityFarm"];
-module.exports.dependencies = ['XTCToken']

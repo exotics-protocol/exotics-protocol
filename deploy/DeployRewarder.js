@@ -4,12 +4,11 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
   const chainId = await getChainId();
 
   const exoticAddress = (await deployments.get('Exotic')).address;
-  const tokenAddress = (await deployments.get("XTCToken")).address;
   const rate = 10000;
 
   const rewarder = await deploy('Rewarder', {
     contract: 'Rewarder',
-    args: [tokenAddress, rate, exoticAddress],
+    args: [rate, exoticAddress],
     from: deployer,
     log: true,
   });
@@ -20,4 +19,4 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
 };
 
 module.exports.tags = ["Rewarder"];
-module.exports.dependencies = ['XTCToken', "Exotic"]
+module.exports.dependencies = ["Exotic"]

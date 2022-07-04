@@ -7,7 +7,7 @@ describe("Exotics MVP test case", function () {
   });
 
   beforeEach(async function () {
-    await deployments.fixture(["RaceLens", "Rewarder"]);
+    await deployments.fixture(["RaceLens", "XTCToken"]);
     this.exotic = await ethers.getContract("Exotic");
     this.vrf = await ethers.getContract('MockVRFCoordinator');
     this.lens = await ethers.getContract('RaceLens');

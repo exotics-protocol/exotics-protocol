@@ -1,6 +1,5 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
-import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -17,17 +16,23 @@ contract Rewarder is Ownable {
 
     event RateUpdated(uint256 rate);
     event GameUpdated(address indexed game);
+    event RewardTokenSet(address indexed token);
 
-    constructor(IERC20 _xtc, uint256 _rate, address _game) {
-        xtc = _xtc;
+    constructor(uint256 _rate, address _game) {
         rate = _rate;
         game = _game;
     }
 
+    function setToken(IERC20 _token) external onlyOwner {
+        require(address(_token) != address(0), "Reward token can't be 0 address");
+        xtc = _token;
+        emit RewardTokenSet(address(_token));
+    }
+
     function claim() external {
-        uint256 claimable = available[msg.sender] - claimed[msg.sender];
-        claimed[msg.sender] += claimable;
-        require(xtc.transfer(msg.sender, claimable), "failed to send");
+        uint256 _claimable = available[msg.sender] - claimed[msg.sender];
+        claimed[msg.sender] += _claimable;
+        require(xtc.transfer(msg.sender, _claimable), "failed to send");
     }
 
     function claimable(address user) external view returns (uint256) {

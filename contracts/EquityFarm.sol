@@ -1,13 +1,13 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
-import "hardhat/console.sol";
 
 // The equity farm is where you can stake xtc tokens in exchange
 // for a share of the protocol fees.
 
-contract EquityFarm {
+contract EquityFarm is Ownable {
     struct UserInfo {
         uint256 amount;
         uint256 rewardDebt;
@@ -20,8 +20,12 @@ contract EquityFarm {
     uint256 private claimable;
     uint256 private constant PRECISION = 1e18;
 
-    constructor(IERC20 _xtc) {
-        xtc = _xtc;
+    event RewardTokenSet(address indexed token);
+
+    function setToken(IERC20 _token) external onlyOwner {
+        require(address(_token) != address(0), "Reward token can't be 0 address");
+        xtc = _token;
+        emit RewardTokenSet(address(_token));
     }
 
     function deposit(uint256 amount) external {
@@ -110,6 +114,6 @@ contract EquityFarm {
             xtc.balanceOf(address(this)));
         lastRewardBalance = rewardBalance;
     }
-
     fallback() external payable {}
+    receive() external payable {}
 }

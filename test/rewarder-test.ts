@@ -12,14 +12,16 @@ describe("Rewarder test case", function () {
     this.token = await this.tokenFactory.deploy(
       'exotic',
       'XTC',
-      ethers.utils.parseEther('1000000'),
+      this.signers[0].address,
+      this.signers[0].address,
+      this.signers[0].address,
       this.signers[0].address,
     );
     this.rewarder = await this.rewarderFactory.deploy(
-      this.token.address,
       5000, // hald the avax value
       this.signers[0].address
     );
+    await this.rewarder.setToken(this.token.address);
   });
 
   it("should report and dispense correct amount", async function (){
