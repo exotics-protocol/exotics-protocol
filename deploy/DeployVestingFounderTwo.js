@@ -3,7 +3,7 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
   const {deployer} = await getNamedAccounts();
   const chainId = await getChainId();
 
-  const founderAddress = '0x900b9Ac28DBE587c2650a070102bae4306100769';  // XXX scuffedlatvian
+  const founderAddress = '0xC357F6cB15d26D2a6e988C055d3E24E8EFEdB044';
   const startTimestamp = 1657411200;
   const durationSeconds = 60*60*24*365;
 
