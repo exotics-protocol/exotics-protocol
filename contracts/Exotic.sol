@@ -27,7 +27,6 @@ contract Exotic is Initializable, OwnableUpgradeable {
     uint256 public jackpotContribution;  // Jackpot contribution in bps
     address public feeAddress;
     address public jackpotAddress;
-
     uint256 public maxBet;
 
     IRewarder public rewarder;
@@ -36,7 +35,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         uint256 raceId;
         uint256 amount;
         address account;
-        uint256[] place;
+        uint8[] place;
         bool paid;
     }
 
@@ -62,7 +61,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         uint256 indexed raceId,
         address indexed from,
         uint256 amount,
-        uint256[] prediction,
+        uint8[] prediction,
         uint256 poolTotal
     );
 
@@ -71,7 +70,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         uint256 indexed raceId,
         address indexed to,
         uint256 amount,
-        uint256[] prediction,
+        uint8[] prediction,
         uint256 payout
     );
 
@@ -163,8 +162,12 @@ contract Exotic is Initializable, OwnableUpgradeable {
 		return block.timestamp + (frequency - (block.timestamp % frequency));
 	}
 
+    function currentRaceId() external view returns (uint256) {
+        return block.timestamp - (block.timestamp % frequency);
+    }
+
     /// @notice Get the current odds for a prediction.
-    function odds(uint256 raceId, uint256[] memory result) public view returns (uint256) {
+    function odds(uint256 raceId, uint8[] memory result) public view returns (uint256) {
         Race memory _race = race[raceId];
         require(result.length == 1, "Only win bet currently supported");
         uint256 total;
@@ -195,7 +198,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
     /// @notice Place a bet.
     function placeBet(
         uint256 raceId,
-        uint256[] calldata prediction
+        uint8[] calldata prediction
     ) external payable returns (uint256 betId) {
         validateRaceID(raceId);
         require(prediction.length == 1, "Only win bet currently supported");
