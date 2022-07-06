@@ -25,5 +25,5 @@ interface IExotic{
     function race(uint256 raceId) external view returns (Race memory);
     function frequency() external view returns (uint256);
     function userBet(address user, uint256 betId) external view returns (Bet memory);
-    function raceResult(uint256 raceId) external view returns (uint256[6] memory);
+    function raceResult(uint256 raceId) external view returns (uint256[1] memory);
 }

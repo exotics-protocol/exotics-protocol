@@ -265,7 +265,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         require(_race.result != 0, "Race not finished");
         require(!_bet.paid, "Bet already paid");
 
-        uint256[6] memory result = raceResult(_bet.raceId);
+        uint256[1] memory result = raceResult(_bet.raceId);
         uint256 i;
         for (i = 0; i < _bet.place.length; i++) {
             if (_bet.place[i] != result[i]) {
@@ -314,42 +314,25 @@ contract Exotic is Initializable, OwnableUpgradeable {
     }
 
     /// @notice Return the results for a race.
-    function raceResult(uint256 raceId) public view returns (uint256[6] memory) {
+    function raceResult(uint256 raceId) public view returns (uint256[1] memory) {
         Race memory _race = race[raceId];
         require(_race.result != 0, "Race is not finished");
 
         uint256 i;
-
-        // Hack add 1 to each weight to ensure stuff, ok
-        uint256[6] memory weights = _race.winWeights;
-        for (i = 0; i < 6; i++) {
-            weights[i] += 1;
-        }
 
         uint256 total;
         for (i = 0; i < 6; i++) {
             total += _race.winWeights[i];
         }
 
-        uint256[6] memory result;
-        uint256 j;
-        uint256 number;
-
+        uint256[1] memory result;
+        uint256 number = _race.result % total;
         for (i = 0; i < 6; i++) {
-            if (total == 0) {
-                number = 0;
+            if (_race.winWeights[i] > number) {
+                result[0] = i;
+                break;
             } else {
-                number = _race.result % total;
-            }
-            for (j = 0; j < 6; j++) {
-                if (weights[j] > number) {
-                    total -= weights[j];
-                    weights[j] = 0;
-                    result[i] = j;
-                    break;
-                } else {
-                    number -= weights[j];
-                }
+                number -= _race.winWeights[i];
             }
         }
         return result;

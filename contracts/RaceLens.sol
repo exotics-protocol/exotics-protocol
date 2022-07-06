@@ -16,7 +16,7 @@ contract RaceLens is Ownable {
         uint256 totalWagered;
         uint256 paid;
         uint256 result;
-        uint256[6] raceResult;
+        uint256[1] raceResult;
         uint256 requestId;
     }
 
@@ -27,7 +27,7 @@ contract RaceLens is Ownable {
         uint256[] place;
         bool paid;
         uint256 betId;
-        uint256[6] raceResult;
+        uint256[1] raceResult;
         bool raceFinished;
     }
 

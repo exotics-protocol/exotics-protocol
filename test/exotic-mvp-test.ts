@@ -160,11 +160,6 @@ describe("Exotics MVP test case", function () {
     let race = await this.lens.race(nextRace)
     expect(race.raceResult).to.eql([
       ethers.BigNumber.from(0),
-      ethers.BigNumber.from(0),
-      ethers.BigNumber.from(0),
-      ethers.BigNumber.from(0),
-      ethers.BigNumber.from(0),
-      ethers.BigNumber.from(0),
     ]);
 
     await network.provider.send("evm_increaseTime", [1199])
@@ -172,7 +167,8 @@ describe("Exotics MVP test case", function () {
     await this.vrf.fulfill();
 
     race = await this.lens.race(nextRace)
-    expect(race.raceResult.length).to.eq(6);
+    expect(race.raceResult.length).to.eq(1);
+    expect(race.raceResult[0]).to.eq(1);
 
   });
 
