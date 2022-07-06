@@ -14,8 +14,6 @@ contract Exotic is Initializable, OwnableUpgradeable {
 
     IRandomProvider public randomProvider;
 
-    uint256 private balance;
-
     /// @notice How often races take place.
     uint256 public frequency;
 
@@ -193,7 +191,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         requestIdRace[s_requestId] = raceId;
         emit RaceStart(
             raceId,
-            balance
+            _race.totalWagered
         );
     }
 
@@ -224,14 +222,12 @@ contract Exotic is Initializable, OwnableUpgradeable {
         _race.winWeights[prediction[0]] += betValue;
         _race.totalWagered += betValue;
 
-        // Internal accounting.
-        balance += betValue;
         emit Wagered(
             raceId,
             msg.sender,
             betValue,
             prediction,
-            balance
+            _race.totalWagered
         );
 
         if (raceId < block.timestamp) {
@@ -276,7 +272,6 @@ contract Exotic is Initializable, OwnableUpgradeable {
         uint256 _payout = (_bet.amount * 1e10) / _odds;
         _bet.paid = true;
         _race.paid += _payout;
-        balance -= _payout;
         emit Payout(
             _bet.raceId,
             msg.sender,
@@ -299,7 +294,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         _race.result = randomWords[0];
         emit RaceEnd(
             raceId,
-            balance,
+            _race.totalWagered,
             randomWords[0]
         );
     }
