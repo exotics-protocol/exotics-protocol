@@ -17,7 +17,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
     uint256 private balance;
 
     /// @notice How often races take place.
-    uint256 public constant frequency = 3 minutes;
+    uint256 public frequency;
 
     /// @notice The datetime of the first race.
     uint256 public start;
@@ -99,7 +99,8 @@ contract Exotic is Initializable, OwnableUpgradeable {
         uint256 _jackpotContribution,
         address _feeAddress,
         address _jackpotAddress,
-        uint256 _maxBet
+        uint256 _maxBet,
+        uint256 _frequency
     ) public initializer {
         start = block.timestamp;
         randomProvider = IRandomProvider(_randomProviderAddress);
@@ -108,6 +109,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         feeAddress = _feeAddress;
         jackpotAddress = _jackpotAddress;
         maxBet = _maxBet;
+        frequency = _frequency;
         __Ownable_init();
     }
 
