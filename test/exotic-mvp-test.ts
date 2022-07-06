@@ -14,6 +14,7 @@ describe("Exotics MVP test case", function () {
     this.rewarder = await ethers.getContract("Rewarder");
     this.xtc = await ethers.getContract('XTCToken');
     this.equityFarm = await ethers.getContract('EquityFarm');
+    this.house = await ethers.getContract("House");
     // Top up the rewarder.
     await this.xtc.transfer(this.rewarder.address, ethers.utils.parseEther("1000000"));
   });
@@ -141,11 +142,11 @@ describe("Exotics MVP test case", function () {
     await expect(this.exotic.placeBet(nextRace + 1, [0], {value: ethers.utils.parseEther('1')})).to.be.reverted;
   });
 
-  it("should send the fee and jackpot contribution on bet", async function () {
+  it("should send the fee and pol contribution on bet", async function () {
     const nextRace = await this.exotic.nextRaceId();
     await this.exotic.placeBet(nextRace, [0], {value: ethers.utils.parseEther('1')});
     expect(
-      await ethers.provider.getBalance("0x1604F1c0aF9765D940519cd2593292b3cE3Ba3CE")
+      await ethers.provider.getBalance(this.house.address)
     ).to.eq(ethers.utils.parseEther('0.005'));
     expect(
       await ethers.provider.getBalance(this.equityFarm.address)

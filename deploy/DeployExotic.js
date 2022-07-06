@@ -3,7 +3,7 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
   const {deployer} = await getNamedAccounts();
   const chainId = await getChainId();
 
-  let randomProviderAddress, fee, jackpotContribution, feeAddress, jackpotAddress, maxBet, frequency;
+  let randomProviderAddress, fee, jackpotContribution, feeAddress, maxBet, frequency, houseAddress;
 
   fee = 50;
   jackpotContribution = 50;
@@ -14,18 +14,17 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
     frequency = 60*10;
   }
   else if (chainId == 43113) {
-    jackpotAddress = '0x1604F1c0aF9765D940519cd2593292b3cE3Ba3CE';
     maxBet = ethers.utils.parseEther("10");
     frequency = 60*5;
   }
   else if (chainId == 31337) {
-    jackpotAddress = '0x1604F1c0aF9765D940519cd2593292b3cE3Ba3CE';
     maxBet = ethers.utils.parseEther("100");
     frequency = 60*5;
   }
 
   randomProviderAddress = (await deployments.get('RandomProvider')).address;
   feeAddress = (await deployments.get('EquityFarm')).address;
+  houseAddress = (await deployments.get("House")).address;
 
   const exotic = await deploy('Exotic', {
     contract: 'Exotic',
@@ -40,7 +39,7 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
             fee,
             jackpotContribution,
             feeAddress,
-            jackpotAddress,
+            houseAddress,
             maxBet,
             frequency
           ],
@@ -58,4 +57,4 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
 };
 
 module.exports.tags = ["Exotic"];
-module.exports.dependencies = ['RandomProvider', "EquityFarm"]
+module.exports.dependencies = ['RandomProvider', "EquityFarm", "House"]
