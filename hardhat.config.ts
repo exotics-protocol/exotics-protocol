@@ -7,11 +7,8 @@ import "@nomiclabs/hardhat-ethers";
 import "hardhat-deploy";
 import "solidity-coverage";
 import "@nomiclabs/hardhat-etherscan";
-<<<<<<< HEAD
 import "hardhat-gas-reporter";
-=======
 import "hardhat-abi-exporter";
->>>>>>> Add abi exporter
 
 dotenv.config();
 
