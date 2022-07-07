@@ -21,9 +21,9 @@ contract Exotic is Initializable, OwnableUpgradeable {
     uint256 public start;
 
     /// @notice Fee paramaters.
-    uint256 public fee;  // House take in bps
-    uint256 public polContribution;  // pol contribution in bps
-    address public feeAddress;
+    uint256 public revenueFee;  // House take in bps
+    uint256 public polFee;  // pol contribution in bps
+    address public revenueAddress;
     address public polAddress;
     uint256 public maxBet;
 
@@ -83,26 +83,26 @@ contract Exotic is Initializable, OwnableUpgradeable {
     );
 
     event MaxBetUpdated(uint256 maxBet);
-    event RevenueAddressUpdated(address indexed feeAddress);
-    event RevenueFeeUpdated(uint256 fee);
-    event POLAddressUpdated(address indexed feeAddress);
-    event POLFeeUpdated(uint256 fee);
+    event RevenueAddressUpdated(address indexed revenueAddress);
+    event RevenueFeeUpdated(uint256 revenueFee);
+    event POLAddressUpdated(address indexed polAddress);
+    event POLFeeUpdated(uint256 polFee);
     event RewarderUpdated(address indexed rewarder);
 
     function initialize(
         address _randomProviderAddress,
-        uint256 _fee,
-        uint256 _polContribution,
-        address _feeAddress,
+        uint256 _revenueFee,
+        uint256 _polFee,
+        address _revenueAddress,
         address _polAddress,
         uint256 _maxBet,
         uint64 _frequency
     ) public initializer {
         start = block.timestamp;
         randomProvider = IRandomProvider(_randomProviderAddress);
-        fee = _fee;
-        polContribution = _polContribution;
-        feeAddress = _feeAddress;
+        revenueFee = _revenueFee;
+        polFee = _polFee;
+        revenueAddress = _revenueAddress;
         polAddress = _polAddress;
         maxBet = _maxBet;
         frequency = _frequency;
@@ -119,26 +119,26 @@ contract Exotic is Initializable, OwnableUpgradeable {
         emit MaxBetUpdated(maxBet);
     }
 
-    function updateRevenueFee(uint256 _fee) external onlyOwner {
-        fee = _fee;
-        emit RevenueFeeUpdated(_fee);
+    function updateRevenueFee(uint256 _revenueFee) external onlyOwner {
+        revenueFee = _revenueFee;
+        emit RevenueFeeUpdated(_revenueFee);
     }
 
-    function updateRevenueAddress(address _feeAddress) external onlyOwner {
-        require(_feeAddress != address(0), "Fee address can't be 0");
-        feeAddress = _feeAddress;
-        emit RevenueAddressUpdated(_feeAddress);
+    function updateRevenueAddress(address _revenueAddress) external onlyOwner {
+        require(_revenueAddress != address(0), "Fee address can't be 0");
+        revenueAddress = _revenueAddress;
+        emit RevenueAddressUpdated(_revenueAddress);
     }
 
-    function updatePOLFee(uint256 _fee) external onlyOwner {
-        polContribution = _fee;
-        emit POLFeeUpdated(_fee);
+    function updatePOLFee(uint256 _polFee) external onlyOwner {
+        polFee = _polFee;
+        emit POLFeeUpdated(_polFee);
     }
 
-    function updatePOLAddress(address _feeAddress) external onlyOwner {
-        require(_feeAddress != address(0), "Fee address can't be 0");
-        polAddress = _feeAddress;
-        emit POLAddressUpdated(_feeAddress);
+    function updatePOLAddress(address _polAddress) external onlyOwner {
+        require(_polAddress != address(0), "Fee address can't be 0");
+        polAddress = _polAddress;
+        emit POLAddressUpdated(_polAddress);
     }
 
     /// @notice Return the amount of bets a user has made.
@@ -216,9 +216,9 @@ contract Exotic is Initializable, OwnableUpgradeable {
         require(_race.requestId == 0, "Race finising");
         require(prediction < 6, "Only 6 faces of dice");
 
-        uint256 betFee = msg.value * fee / 10000;
-        uint256 polFee = msg.value * polContribution / 10000;
-        uint256 betValue = msg.value - (betFee + polFee);
+        uint256 _revenueFee = msg.value * revenueFee / 10000;
+        uint256 _polFee = msg.value * polFee / 10000;
+        uint256 betValue = msg.value - (_revenueFee + _polFee);
 
         require(betValue <= maxBet, "Bet above maxBet limit");
 
@@ -249,9 +249,9 @@ contract Exotic is Initializable, OwnableUpgradeable {
         if (address(rewarder) != address(0)) {
             rewarder.addReward(msg.sender, msg.value);
         }
-        (bool sent, ) = payable(polAddress).call{value: polFee}("");
+        (bool sent, ) = payable(polAddress).call{value: _polFee}("");
         require(sent, "Fee not sent");
-        (sent, ) = payable(feeAddress).call{value: betFee}("");
+        (sent, ) = payable(revenueAddress).call{value: _revenueFee}("");
         require(sent, "Revenue not sent");
         betsPerRace[raceId][msg.sender].push(betId);
         return betId;
