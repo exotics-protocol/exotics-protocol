@@ -52,7 +52,7 @@ contract RandomProvider is VRFConsumerBaseV2, Ownable {
         uint256 requestId,
         uint256[] memory randomWords
     ) internal override {
-        exotic.endRace(requestId, randomWords);
+        exotic.endRoll(requestId, randomWords);
     }
 
 }

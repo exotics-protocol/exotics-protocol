@@ -4,13 +4,13 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
   const chainId = await getChainId();
 
   const exoticAddress = (await deployments.get('Exotic')).address;
-  const exotic = await deploy('RaceLens', {
-    contract: 'RaceLens',
+  const exotic = await deploy('RollLens', {
+    contract: 'RollLens',
     from: deployer,
     args: [exoticAddress],
     log: true,
   });
 };
 
-module.exports.tags = ["RaceLens"];
+module.exports.tags = ["RollLens"];
 module.exports.dependencies = ['Exotic']
