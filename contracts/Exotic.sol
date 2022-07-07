@@ -224,6 +224,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
 
         // Update the race.
         _race.winWeights[prediction] += betValue;
+        betsPerRace[raceId][msg.sender].push(betId);
 
         emit Wagered(
             raceId,
@@ -240,10 +241,9 @@ contract Exotic is Initializable, OwnableUpgradeable {
             rewarder.addReward(msg.sender, msg.value);
         }
         (bool sent, ) = payable(polAddress).call{value: _polFee}("");
-        require(sent, "Fee not sent");
+        require(sent, "POL Fee not sent");
         (sent, ) = payable(revenueAddress).call{value: _revenueFee}("");
-        require(sent, "Revenue not sent");
-        betsPerRace[raceId][msg.sender].push(betId);
+        require(sent, "Revenue Fee not sent");
         return betId;
     }
 
