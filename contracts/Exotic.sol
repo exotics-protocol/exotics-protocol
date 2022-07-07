@@ -15,7 +15,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
     IRandomProvider public randomProvider;
 
     /// @notice How often races take place.
-    uint256 public frequency;
+    uint64 public frequency;
 
     /// @notice The datetime of the first race.
     uint256 public start;
@@ -30,15 +30,14 @@ contract Exotic is Initializable, OwnableUpgradeable {
     IRewarder public rewarder;
 
     struct Bet {
-        uint64 raceId;
         uint256 amount;
         address account;
+        uint64 raceId;
         uint8 prediction;
         bool paid;
     }
 
     struct Race {
-        uint256 paid;
         uint256 result;
         uint256 requestId;
         uint256[6] winWeights;
@@ -97,7 +96,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         address _feeAddress,
         address _polAddress,
         uint256 _maxBet,
-        uint256 _frequency
+        uint64 _frequency
     ) public initializer {
         start = block.timestamp;
         randomProvider = IRandomProvider(_randomProviderAddress);
@@ -283,7 +282,6 @@ contract Exotic is Initializable, OwnableUpgradeable {
         uint256 _odds = odds(_bet.raceId, _bet.prediction);
         uint256 _payout = (_bet.amount * 1e10) / _odds;
         _bet.paid = true;
-        _race.paid += _payout;
         emit Payout(
             _bet.raceId,
             msg.sender,

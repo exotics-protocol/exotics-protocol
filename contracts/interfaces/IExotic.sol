@@ -13,7 +13,6 @@ interface IExotic{
     }
 
     struct Race {
-        uint256 paid;
         uint256 result;
         uint256 requestId;
         //uint256[6][3] weights;

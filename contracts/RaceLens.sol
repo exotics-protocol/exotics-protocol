@@ -14,7 +14,6 @@ contract RaceLens is Ownable {
     struct FullRace {
         uint64 raceId;
         uint256 totalWagered;
-        uint256 paid;
         uint256 result;
         uint256[1] raceResult;
         uint256 requestId;
@@ -47,7 +46,6 @@ contract RaceLens is Ownable {
         FullRace memory _returnRace;
         _returnRace.raceId = raceId;
         _returnRace.totalWagered = exotic.totalWagered(raceId);
-        _returnRace.paid = _race.paid;
         _returnRace.result = _race.result;
         _returnRace.requestId = _race.requestId;
         if (_race.result != 0) {
