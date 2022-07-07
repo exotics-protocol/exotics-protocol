@@ -7,7 +7,11 @@ import "@nomiclabs/hardhat-ethers";
 import "hardhat-deploy";
 import "solidity-coverage";
 import "@nomiclabs/hardhat-etherscan";
+<<<<<<< HEAD
 import "hardhat-gas-reporter";
+=======
+import "hardhat-abi-exporter";
+>>>>>>> Add abi exporter
 
 dotenv.config();
 
@@ -60,7 +64,12 @@ const config: HardhatUserConfig = {
     currency: "USD",
     gasPriceApi: "https://api.snowtrace.io/api?module=proxy&action=eth_gasPrice",
     coinmarketcap: process.env.COINMARKETCAP_KEY !== undefined ? process.env.COINMARKETCAP_KEY: "",
-  }
+  },
+  abiExporter: {
+    path: "./abi/",
+    clear: true,
+    runOnCompile: true,
+  },
 };
 
 export default config;
