@@ -13,7 +13,6 @@ interface IExotic{
     }
 
     struct Race {
-        uint256 totalWagered;
         uint256 paid;
         uint256 result;
         uint256 requestId;
@@ -26,4 +25,5 @@ interface IExotic{
     function frequency() external view returns (uint256);
     function userBet(address user, uint256 betId) external view returns (Bet memory);
     function raceResult(uint256 raceId) external view returns (uint256[1] memory);
+    function totalWagered(uint256 raceId) external view returns (uint256);
 }

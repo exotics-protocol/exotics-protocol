@@ -38,7 +38,6 @@ contract Exotic is Initializable, OwnableUpgradeable {
     }
 
     struct Race {
-        uint256 totalWagered;
         uint256 paid;
         uint256 result;
         uint256 requestId;
@@ -166,6 +165,16 @@ contract Exotic is Initializable, OwnableUpgradeable {
         return block.timestamp - (block.timestamp % frequency);
     }
 
+    function totalWagered(uint256 raceId) public view returns (uint256)  {
+        Race memory _race = race[raceId];
+        return _race.winWeights[0] +
+            _race.winWeights[1] +
+            _race.winWeights[2] +
+            _race.winWeights[3] +
+            _race.winWeights[4] +
+            _race.winWeights[5];
+    }
+
     /// @notice Get the current odds for a prediction.
     function odds(uint256 raceId, uint8[] memory result) public view returns (uint256) {
         Race memory _race = race[raceId];
@@ -191,7 +200,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         requestIdRace[s_requestId] = raceId;
         emit RaceStart(
             raceId,
-            _race.totalWagered
+            totalWagered(raceId)
         );
     }
 
@@ -227,14 +236,13 @@ contract Exotic is Initializable, OwnableUpgradeable {
 
         // Update the race.
         _race.winWeights[prediction[0]] += betValue;
-        _race.totalWagered += betValue;
 
         emit Wagered(
             raceId,
             msg.sender,
             betValue,
             prediction,
-            _race.totalWagered
+            totalWagered(raceId)
         );
 
         if (raceId < block.timestamp) {
@@ -301,7 +309,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         _race.result = randomWords[0];
         emit RaceEnd(
             raceId,
-            _race.totalWagered,
+            totalWagered(raceId),
             randomWords[0]
         );
     }

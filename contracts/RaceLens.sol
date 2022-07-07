@@ -46,7 +46,7 @@ contract RaceLens is Ownable {
         IExotic.Race memory _race = exotic.race(raceId);
         FullRace memory _returnRace;
         _returnRace.raceId = raceId;
-        _returnRace.totalWagered = _race.totalWagered;
+        _returnRace.totalWagered = exotic.totalWagered(raceId);
         _returnRace.paid = _race.paid;
         _returnRace.result = _race.result;
         _returnRace.requestId = _race.requestId;
