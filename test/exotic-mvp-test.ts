@@ -130,9 +130,9 @@ describe("Exotics MVP test case", function () {
     expect(await this.exotic.userBetCount(this.signers[0].address)).to.equal(2);
 
     const betOne = await this.exotic.userBet(this.signers[0].address, 0);
-    expect(betOne[0]).to.equal(nextRace);
-    expect(betOne[1]).to.equal(ethers.utils.parseEther('0.99'));
-    expect(betOne[2]).to.equal(this.signers[0].address);
+    expect(betOne[2]).to.equal(nextRace);
+    expect(betOne[0]).to.equal(ethers.utils.parseEther('0.99'));
+    expect(betOne[1]).to.equal(this.signers[0].address);
     expect(betOne[3]).to.equal(0);
     expect(betOne[4]).to.equal(false);
   });
@@ -252,7 +252,7 @@ describe("Exotics MVP test case", function () {
     await this.exotic.placeBet(nextRace, 0, {value: ethers.utils.parseEther('1')});
     await this.vrf.fulfill();
     const race = await this.exotic.race(nextRace);
-    expect(race[2]).to.be.gt(0);
+    expect(race[1]).to.be.gt(0);
   });
 
   it("should return all bets on a race", async function () {
