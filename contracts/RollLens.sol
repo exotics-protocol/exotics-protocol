@@ -107,4 +107,59 @@ contract RollLens is Ownable {
         return result;
     }
 
+    function userRollBets(
+        uint64 rollId,
+        address user,
+        uint256 resultsPerPage,
+        uint256 page
+    ) public view returns (
+        FullBet[] memory
+    ) {
+        uint256 betCount = exotic.userRollBetCount(rollId, user);
+        uint256 start;
+        uint256 end;
+
+        // requesting past what we have.
+        if ((resultsPerPage * page) > betCount) {
+            start = 0;
+            end = 0;
+        } else {
+            start = betCount - (resultsPerPage * page);
+            if (start > resultsPerPage) {
+                end = start - resultsPerPage;
+            } else {
+                end = 0;
+            }
+            if (start > betCount) {
+                end = betCount < resultsPerPage ? 0 : betCount - resultsPerPage;
+                start = betCount;
+            }
+        }
+        FullBet[] memory result = new FullBet[](start - end);
+        uint256 i;
+        uint256 counter;
+        for(i = start; i > end ; i--) {
+            IExotic.Bet memory _bet = exotic.userRollBet(rollId, user, i - 1);
+            FullBet memory _returnBet;
+            _returnBet.rollId = _bet.rollId;
+            _returnBet.amount = _bet.amount;
+            _returnBet.account = _bet.account;
+            _returnBet.prediction = _bet.prediction;
+            _returnBet.paid = _bet.paid;
+
+            uint256 _odds = exotic.odds(_bet.rollId, _bet.prediction);
+            if (_odds != 0) {
+                _returnBet.payout = (_bet.amount * 1e10) / _odds;
+            }
+            _returnBet.betId = i - 1;
+            FullRoll memory _roll = roll(_bet.rollId);
+            _returnBet.rollResult = _roll.rollResult;
+            _returnBet.rollFinished = _roll.result == 0 ? false : true;
+            result[counter] = _returnBet;
+            counter += 1;
+        }
+        return result;
+    }
+
+
 }
