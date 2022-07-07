@@ -12,7 +12,7 @@ import "./interfaces/IExotic.sol";
 contract RaceLens is Ownable {
 
     struct FullRace {
-        uint256 raceId;
+        uint64 raceId;
         uint256 totalWagered;
         uint256 paid;
         uint256 result;
@@ -21,7 +21,7 @@ contract RaceLens is Ownable {
     }
 
     struct FullBet {
-        uint256 raceId;
+        uint64 raceId;
         uint256 amount;
         address account;
         uint8[1] place;
@@ -41,7 +41,7 @@ contract RaceLens is Ownable {
         exotic = _exotic;
     }
 
-    function race(uint256 raceId) public view returns (FullRace memory) {
+    function race(uint64 raceId) public view returns (FullRace memory) {
         require(raceId % exotic.frequency() == 0, "Invalid race ID");
         IExotic.Race memory _race = exotic.race(raceId);
         FullRace memory _returnRace;
