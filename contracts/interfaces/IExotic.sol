@@ -8,7 +8,7 @@ interface IExotic{
         uint256 raceId;
         uint256 amount;
         address account;
-        uint256[] place;
+        uint8 prediction;
         bool paid;
     }
 

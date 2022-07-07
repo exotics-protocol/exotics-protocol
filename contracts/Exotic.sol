@@ -33,7 +33,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         uint256 raceId;
         uint256 amount;
         address account;
-        uint8[] place;
+        uint8 prediction;
         bool paid;
     }
 
@@ -58,7 +58,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         uint256 indexed raceId,
         address indexed from,
         uint256 amount,
-        uint8[] prediction,
+        uint8 prediction,
         uint256 poolTotal
     );
 
@@ -67,7 +67,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         uint256 indexed raceId,
         address indexed to,
         uint256 amount,
-        uint8[] prediction,
+        uint8 prediction,
         uint256 payout
     );
 
@@ -176,16 +176,16 @@ contract Exotic is Initializable, OwnableUpgradeable {
     }
 
     /// @notice Get the current odds for a prediction.
-    function odds(uint256 raceId, uint8[] memory result) public view returns (uint256) {
+    function odds(uint256 raceId, uint8 result) public view returns (uint256) {
         Race memory _race = race[raceId];
-        require(result.length == 1, "Only win bet currently supported");
+        require(result < 6, "Only win bet currently supported");
         uint256 total;
         uint256 i;
         for (i = 0; i < 6; i++) {
             total += _race.winWeights[i];
         }
         if (total == 0) return total;
-        return (_race.winWeights[result[0]] * 1e10) / total;
+        return (_race.winWeights[result] * 1e10) / total;
     }
 
     /// @notice Start the race and request result from VRF.
@@ -207,7 +207,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
     /// @notice Place a bet.
     function placeBet(
         uint256 raceId,
-        uint8[] calldata prediction
+        uint8 prediction
     ) external payable returns (uint256 betId) {
 
         require(raceId % frequency == 0, "Invalid race ID");
@@ -216,7 +216,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         Race storage _race = race[raceId];
         require(_race.result == 0, "Race finished");
         require(_race.requestId == 0, "Race finising");
-        require(prediction.length == 1, "Only win bet currently supported");
+        require(prediction < 6, "Only 6 faces of dice");
 
         uint256 betFee = msg.value * fee / 10000;
         uint256 polFee = msg.value * polContribution / 10000;
@@ -229,13 +229,13 @@ contract Exotic is Initializable, OwnableUpgradeable {
         _bet.raceId = raceId;
         _bet.amount = betValue;
         _bet.account = msg.sender;
+        _bet.prediction = prediction;
 
         bet[msg.sender].push(_bet);
         betId = bet[msg.sender].length - 1;
-        bet[msg.sender][betId].place.push(prediction[0]);
 
         // Update the race.
-        _race.winWeights[prediction[0]] += betValue;
+        _race.winWeights[prediction] += betValue;
 
         emit Wagered(
             raceId,
@@ -278,12 +278,10 @@ contract Exotic is Initializable, OwnableUpgradeable {
 
         uint256[1] memory result = raceResult(_bet.raceId);
         uint256 i;
-        for (i = 0; i < _bet.place.length; i++) {
-            if (_bet.place[i] != result[i]) {
-                return;
-            }
+        if (_bet.prediction != result[0]) {
+            return;
         }
-        uint256 _odds = odds(_bet.raceId, _bet.place);
+        uint256 _odds = odds(_bet.raceId, _bet.prediction);
         uint256 _payout = (_bet.amount * 1e10) / _odds;
         _bet.paid = true;
         _race.paid += _payout;
@@ -291,7 +289,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
             _bet.raceId,
             msg.sender,
             _bet.amount,
-            _bet.place,
+            _bet.prediction,
             _payout
         );
         payable(msg.sender).transfer(_payout);
