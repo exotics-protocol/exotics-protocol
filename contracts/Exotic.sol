@@ -253,7 +253,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         require(sent, "Fee not sent");
         (sent, ) = payable(feeAddress).call{value: betFee}("");
         require(sent, "Revenue not sent");
-        betsPerRace[raceId][msg.sender].push(bet[msg.sender].length - 1);
+        betsPerRace[raceId][msg.sender].push(betId);
         return betId;
     }
 
