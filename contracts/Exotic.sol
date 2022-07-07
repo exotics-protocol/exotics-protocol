@@ -210,7 +210,6 @@ contract Exotic is Initializable, OwnableUpgradeable {
     ) external payable returns (uint256 betId) {
 
         require(raceId % frequency == 0, "Invalid race ID");
-        require(raceId >= start, "Living in the past bro");
 
         Race storage _race = race[raceId];
         require(_race.result == 0, "Race finished");
