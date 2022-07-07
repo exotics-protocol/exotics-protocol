@@ -24,7 +24,7 @@ contract RaceLens is Ownable {
         uint256 raceId;
         uint256 amount;
         address account;
-        uint256[] place;
+        uint8[1] place;
         bool paid;
         uint256 betId;
         uint256[1] raceResult;
@@ -91,7 +91,7 @@ contract RaceLens is Ownable {
             _returnBet.raceId = _bet.raceId;
             _returnBet.amount = _bet.amount;
             _returnBet.account = _bet.account;
-            _returnBet.place = _bet.place;
+            _returnBet.place = [_bet.prediction];
             _returnBet.paid = _bet.paid;
             _returnBet.betId = i - 1;
             FullRace memory _race = race(_bet.raceId);
