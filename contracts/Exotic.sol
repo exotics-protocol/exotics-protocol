@@ -208,7 +208,6 @@ contract Exotic is Initializable, OwnableUpgradeable {
         require(raceId % frequency == 0, "Invalid race ID");
 
         Race storage _race = race[raceId];
-        require(_race.result == 0, "Race finished");
         require(_race.requestId == 0, "Race finising");
         require(prediction < 6, "Only 6 faces of dice");
 
