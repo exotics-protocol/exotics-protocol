@@ -178,12 +178,8 @@ contract Exotic is Initializable, OwnableUpgradeable {
     function odds(uint64 raceId, uint8 result) public view returns (uint256) {
         Race memory _race = race[raceId];
         require(result < 6, "Only win bet currently supported");
-        uint256 total;
-        uint256 i;
-        for (i = 0; i < 6; i++) {
-            total += _race.winWeights[i];
-        }
-        if (total == 0) return total;
+        uint256 total = totalWagered(raceId);
+        if (total == 0) return 0;
         return (_race.winWeights[result] * 1e10) / total;
     }
 
