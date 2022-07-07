@@ -218,12 +218,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         require(betValue <= maxBet, "Bet above maxBet limit");
 
         // Create the bet.
-        Bet memory _bet;
-        _bet.raceId = raceId;
-        _bet.amount = betValue;
-        _bet.account = msg.sender;
-        _bet.prediction = prediction;
-
+        Bet memory _bet = Bet(betValue, msg.sender, raceId, prediction, false);
         bet[msg.sender].push(_bet);
         betId = bet[msg.sender].length - 1;
 
