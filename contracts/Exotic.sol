@@ -30,7 +30,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
     IRewarder public rewarder;
 
     struct Bet {
-        uint256 raceId;
+        uint64 raceId;
         uint256 amount;
         address account;
         uint8 prediction;
@@ -45,17 +45,17 @@ contract Exotic is Initializable, OwnableUpgradeable {
     }
 
     /// @notice The state for each race.
-    mapping(uint256 => Race) public race;
+    mapping(uint64 => Race) public race;
     /// @notice mapping of address to list of bets.
     mapping(address => Bet[]) public bet;
     /// @notice used internally to map races to VRF requests.
-    mapping(uint256 => uint256) private requestIdRace;
+    mapping(uint256 => uint64) private requestIdRace;
 
     mapping(uint256 => mapping(address => uint256[])) public betsPerRace;
 
     /// @notice emitted when a new bet is placed on a race.
     event Wagered(
-        uint256 indexed raceId,
+        uint64 indexed raceId,
         address indexed from,
         uint256 amount,
         uint8 prediction,
@@ -64,7 +64,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
 
     /// @notice emitted when a bet is cashed out.
     event Payout(
-        uint256 indexed raceId,
+        uint64 indexed raceId,
         address indexed to,
         uint256 amount,
         uint8 prediction,
@@ -73,12 +73,12 @@ contract Exotic is Initializable, OwnableUpgradeable {
 
     /// @notice emitted when a race starts.
     event RaceStart(
-        uint256 indexed raceId,
+        uint64 indexed raceId,
         uint256 totalValue
     );
     /// @notice emitted when a race ends.
     event RaceEnd(
-        uint256 indexed raceId,
+        uint64 indexed raceId,
         uint256 totalValue,
         uint256 result
     );
@@ -165,7 +165,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         return block.timestamp - (block.timestamp % frequency);
     }
 
-    function totalWagered(uint256 raceId) public view returns (uint256)  {
+    function totalWagered(uint64 raceId) public view returns (uint256)  {
         Race memory _race = race[raceId];
         return _race.winWeights[0] +
             _race.winWeights[1] +
@@ -176,7 +176,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
     }
 
     /// @notice Get the current odds for a prediction.
-    function odds(uint256 raceId, uint8 result) public view returns (uint256) {
+    function odds(uint64 raceId, uint8 result) public view returns (uint256) {
         Race memory _race = race[raceId];
         require(result < 6, "Only win bet currently supported");
         uint256 total;
@@ -189,7 +189,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
     }
 
     /// @notice Start the race and request result from VRF.
-    function startRace(uint256 raceId) public {
+    function startRace(uint64 raceId) public {
         validateRaceID(raceId);
         require(block.timestamp > raceId, "Race not finished");
         Race storage _race = race[raceId];
@@ -206,7 +206,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
 
     /// @notice Place a bet.
     function placeBet(
-        uint256 raceId,
+        uint64 raceId,
         uint8 prediction
     ) external payable returns (uint256 betId) {
 
@@ -259,7 +259,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         return betId;
     }
 
-    function betsOnRace(address user, uint256 raceId) external view returns (Bet[] memory) {
+    function betsOnRace(address user, uint64 raceId) external view returns (Bet[] memory) {
         uint256[] memory betIds = betsPerRace[raceId][user];
         uint256 i;
         Bet[] memory result = new Bet[](betIds.length);
@@ -277,7 +277,6 @@ contract Exotic is Initializable, OwnableUpgradeable {
         require(!_bet.paid, "Bet already paid");
 
         uint256[1] memory result = raceResult(_bet.raceId);
-        uint256 i;
         if (_bet.prediction != result[0]) {
             return;
         }
@@ -301,7 +300,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         uint256[] memory randomWords
     ) external {
         require(msg.sender == address(randomProvider), "Not Allowed randomProvider");
-        uint256 raceId = requestIdRace[requestId];
+        uint64 raceId = requestIdRace[requestId];
         Race storage _race = race[raceId];
         require(_race.result == 0, "Randomness already fulfilled");
         _race.result = randomWords[0];
@@ -313,7 +312,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
     }
 
     /// @notice Validate a `raceId` is valid to make a bet on.
-    function validateRaceID(uint256 raceId) internal view {
+    function validateRaceID(uint64 raceId) internal view {
         // Need to validate race length isn't finished
         require(raceId % frequency == 0, "Invalid race ID");
         require(raceId >= start, "Living in the past bro");
@@ -322,7 +321,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
     }
 
     /// @notice Return the results for a race.
-    function raceResult(uint256 raceId) public view returns (uint256[1] memory) {
+    function raceResult(uint64 raceId) public view returns (uint256[1] memory) {
         Race memory _race = race[raceId];
         require(_race.result != 0, "Race is not finished");
 
