@@ -7,6 +7,7 @@ import "@nomiclabs/hardhat-ethers";
 import "hardhat-deploy";
 import "solidity-coverage";
 import "@nomiclabs/hardhat-etherscan";
+import "hardhat-gas-reporter";
 
 dotenv.config();
 
@@ -24,7 +25,15 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.7",
+  solidity: {
+    version: "0.8.7",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 1000,
+      }
+    }
+  },
   networks: {
     fuji: {
       url: 'https://api.avax-test.network/ext/bc/C/rpc',
@@ -46,6 +55,12 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
+  gasReporter: {
+    token: "AVAX",
+    currency: "USD",
+    gasPriceApi: "https://api.snowtrace.io/api?module=proxy&action=eth_gasPrice",
+    coinmarketcap: process.env.COINMARKETCAP_KEY !== undefined ? process.env.COINMARKETCAP_KEY: "",
+  }
 };
 
 export default config;

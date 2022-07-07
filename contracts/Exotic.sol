@@ -200,7 +200,13 @@ contract Exotic is Initializable, OwnableUpgradeable {
         uint256 raceId,
         uint8[] calldata prediction
     ) external payable returns (uint256 betId) {
-        validateRaceID(raceId);
+
+        require(raceId % frequency == 0, "Invalid race ID");
+        require(raceId >= start, "Living in the past bro");
+
+        Race storage _race = race[raceId];
+        require(_race.result == 0, "Race finished");
+        require(_race.requestId == 0, "Race finising");
         require(prediction.length == 1, "Only win bet currently supported");
 
         uint256 betFee = msg.value * fee / 10000;
@@ -214,11 +220,12 @@ contract Exotic is Initializable, OwnableUpgradeable {
         _bet.raceId = raceId;
         _bet.amount = betValue;
         _bet.account = msg.sender;
+
         bet[msg.sender].push(_bet);
-        bet[msg.sender][bet[msg.sender].length - 1].place.push(prediction[0]);
+        betId = bet[msg.sender].length - 1;
+        bet[msg.sender][betId].place.push(prediction[0]);
 
         // Update the race.
-        Race storage _race = race[raceId];
         _race.winWeights[prediction[0]] += betValue;
         _race.totalWagered += betValue;
 
@@ -241,7 +248,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         (sent, ) = payable(feeAddress).call{value: betFee}("");
         require(sent, "Revenue not sent");
         betsPerRace[raceId][msg.sender].push(bet[msg.sender].length - 1);
-        return bet[msg.sender].length - 1;
+        return betId;
     }
 
     function betsOnRace(address user, uint256 raceId) external view returns (Bet[] memory) {
