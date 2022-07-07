@@ -8,27 +8,27 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IExotic.sol";
 
 
-/// @title Helper contract for fetching data from the race.
-contract RaceLens is Ownable {
+/// @title Helper contract for fetching data from the roll.
+contract RollLens is Ownable {
 
-    struct FullRace {
-        uint64 raceId;
+    struct FullRoll {
+        uint64 rollId;
         uint256 totalWagered;
         uint256 result;
-        uint256[1] raceResult;
+        uint256 rollResult;
         uint256 requestId;
     }
 
     struct FullBet {
-        uint64 raceId;
+        uint64 rollId;
         uint256 amount;
         address account;
-        uint8[1] place;
+        uint8 prediction;
         uint256 payout;
         bool paid;
         uint256 betId;
-        uint256[1] raceResult;
-        bool raceFinished;
+        uint256 rollResult;
+        bool rollFinished;
     }
 
     IExotic public exotic;
@@ -41,19 +41,19 @@ contract RaceLens is Ownable {
         exotic = _exotic;
     }
 
-    function race(uint64 raceId) public view returns (FullRace memory) {
-        require(raceId % exotic.frequency() == 0, "Invalid race ID");
-        IExotic.Race memory _race = exotic.race(raceId);
-        FullRace memory _returnRace;
-        _returnRace.raceId = raceId;
-        _returnRace.totalWagered = exotic.totalWagered(raceId);
-        _returnRace.result = _race.result;
-        _returnRace.requestId = _race.requestId;
-        if (_race.result != 0) {
-            _returnRace.raceResult = exotic.raceResult(raceId);
+    function roll(uint64 rollId) public view returns (FullRoll memory) {
+        require(rollId % exotic.frequency() == 0, "Invalid roll ID");
+        IExotic.Roll memory _roll = exotic.roll(rollId);
+        FullRoll memory _returnRoll;
+        _returnRoll.rollId = rollId;
+        _returnRoll.totalWagered = exotic.totalWagered(rollId);
+        _returnRoll.result = _roll.result;
+        _returnRoll.requestId = _roll.requestId;
+        if (_roll.result != 0) {
+            _returnRoll.rollResult = exotic.rollResult(rollId);
         }
 
-        return _returnRace;
+        return _returnRoll;
     }
 
     function userBets(
@@ -87,20 +87,20 @@ contract RaceLens is Ownable {
         for(i = start; i > end ; i--) {
             IExotic.Bet memory _bet = exotic.userBet(user, i - 1);
             FullBet memory _returnBet;
-            _returnBet.raceId = _bet.raceId;
+            _returnBet.rollId = _bet.rollId;
             _returnBet.amount = _bet.amount;
             _returnBet.account = _bet.account;
-            _returnBet.place = [_bet.prediction];
+            _returnBet.prediction = _bet.prediction;
             _returnBet.paid = _bet.paid;
 
-            uint256 _odds = exotic.odds(_bet.raceId, _bet.prediction);
+            uint256 _odds = exotic.odds(_bet.rollId, _bet.prediction);
             if (_odds != 0) {
                 _returnBet.payout = (_bet.amount * 1e10) / _odds;
             }
             _returnBet.betId = i - 1;
-            FullRace memory _race = race(_bet.raceId);
-            _returnBet.raceResult = _race.raceResult;
-            _returnBet.raceFinished = _race.result == 0 ? false : true;
+            FullRoll memory _roll = roll(_bet.rollId);
+            _returnBet.rollResult = _roll.rollResult;
+            _returnBet.rollFinished = _roll.result == 0 ? false : true;
             result[counter] = _returnBet;
             counter += 1;
         }

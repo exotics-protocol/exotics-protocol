@@ -14,10 +14,10 @@ contract Exotic is Initializable, OwnableUpgradeable {
 
     IRandomProvider public randomProvider;
 
-    /// @notice How often races take place.
+    /// @notice How often rolls take place.
     uint64 public frequency;
 
-    /// @notice The datetime of the first race.
+    /// @notice The datetime of the first roll.
     uint256 public start;
 
     /// @notice Fee paramaters.
@@ -32,29 +32,29 @@ contract Exotic is Initializable, OwnableUpgradeable {
     struct Bet {
         uint256 amount;
         address account;
-        uint64 raceId;
+        uint64 rollId;
         uint8 prediction;
         bool paid;
     }
 
-    struct Race {
+    struct Roll {
         uint256 result;
         uint256 requestId;
         uint256[6] winWeights;
     }
 
-    /// @notice The state for each race.
-    mapping(uint64 => Race) public race;
+    /// @notice The state for each roll.
+    mapping(uint64 => Roll) public roll;
     /// @notice mapping of address to list of bets.
     mapping(address => Bet[]) public bet;
-    /// @notice used internally to map races to VRF requests.
-    mapping(uint256 => uint64) private requestIdRace;
+    /// @notice used internally to map rolls to VRF requests.
+    mapping(uint256 => uint64) private requestIdRoll;
 
-    mapping(uint256 => mapping(address => uint256[])) public betsPerRace;
+    mapping(uint256 => mapping(address => uint256[])) public betsPerRoll;
 
-    /// @notice emitted when a new bet is placed on a race.
+    /// @notice emitted when a new bet is placed on a role.
     event Wagered(
-        uint64 indexed raceId,
+        uint64 indexed rollId,
         address indexed from,
         uint256 amount,
         uint8 prediction,
@@ -63,21 +63,21 @@ contract Exotic is Initializable, OwnableUpgradeable {
 
     /// @notice emitted when a bet is cashed out.
     event Payout(
-        uint64 indexed raceId,
+        uint64 indexed rollId,
         address indexed to,
         uint256 amount,
         uint8 prediction,
         uint256 payout
     );
 
-    /// @notice emitted when a race starts.
-    event RaceStart(
-        uint64 indexed raceId,
+    /// @notice emitted when a roll starts.
+    event RollStart(
+        uint64 indexed rollId,
         uint256 totalValue
     );
-    /// @notice emitted when a race ends.
-    event RaceEnd(
-        uint64 indexed raceId,
+    /// @notice emitted when a roll ends.
+    event RollEnd(
+        uint64 indexed rollId,
         uint256 totalValue,
         uint256 result
     );
@@ -155,60 +155,60 @@ contract Exotic is Initializable, OwnableUpgradeable {
         return bet[user][betId];
     }
 
-	/// @notice The time of the next race to take place.
-	function nextRaceId() external view returns (uint256) {
+	/// @notice The time of the next roll to take place.
+	function nextRollId() external view returns (uint256) {
 		return block.timestamp + (frequency - (block.timestamp % frequency));
 	}
 
-    function currentRaceId() external view returns (uint256) {
+    function currentRollId() external view returns (uint256) {
         return block.timestamp - (block.timestamp % frequency);
     }
 
-    function totalWagered(uint64 raceId) public view returns (uint256)  {
-        Race memory _race = race[raceId];
-        return _race.winWeights[0] +
-            _race.winWeights[1] +
-            _race.winWeights[2] +
-            _race.winWeights[3] +
-            _race.winWeights[4] +
-            _race.winWeights[5];
+    function totalWagered(uint64 rollId) public view returns (uint256)  {
+        Roll memory _roll = roll[rollId];
+        return _roll.winWeights[0] +
+            _roll.winWeights[1] +
+            _roll.winWeights[2] +
+            _roll.winWeights[3] +
+            _roll.winWeights[4] +
+            _roll.winWeights[5];
     }
 
     /// @notice Get the current odds for a prediction.
-    function odds(uint64 raceId, uint8 result) public view returns (uint256) {
-        Race memory _race = race[raceId];
+    function odds(uint64 rollId, uint8 result) public view returns (uint256) {
+        Roll memory _roll = roll[rollId];
         require(result < 6, "Only win bet currently supported");
-        uint256 total = totalWagered(raceId);
+        uint256 total = totalWagered(rollId);
         if (total == 0) return 0;
-        return (_race.winWeights[result] * 1e10) / total;
+        return (_roll.winWeights[result] * 1e10) / total;
     }
 
-    /// @notice Start the race and request result from VRF.
-    function startRace(uint64 raceId) public {
-        validateRaceID(raceId);
-        require(block.timestamp > raceId, "Race not finished");
-        Race storage _race = race[raceId];
-        require(_race.requestId == 0, "Result already requested");
-        require(_race.result == 0, "Race result already fulfilled");
+    /// @notice Start the roll and request result from VRF.
+    function startRoll(uint64 rollId) public {
+        validateRollId(rollId);
+        require(block.timestamp > rollId, "Roll not finished");
+        Roll storage _roll = roll[rollId];
+        require(_roll.requestId == 0, "Result already requested");
+        require(_roll.result == 0, "Roll result already fulfilled");
 	 	uint256 s_requestId = randomProvider.requestRandomWords();
-        _race.requestId = s_requestId;
-        requestIdRace[s_requestId] = raceId;
-        emit RaceStart(
-            raceId,
-            totalWagered(raceId)
+        _roll.requestId = s_requestId;
+        requestIdRoll[s_requestId] = rollId;
+        emit RollStart(
+            rollId,
+            totalWagered(rollId)
         );
     }
 
     /// @notice Place a bet.
     function placeBet(
-        uint64 raceId,
+        uint64 rollId,
         uint8 prediction
     ) external payable returns (uint256 betId) {
 
-        require(raceId % frequency == 0, "Invalid race ID");
+        require(rollId % frequency == 0, "Invalid roll ID");
 
-        Race storage _race = race[raceId];
-        require(_race.requestId == 0, "Race finising");
+        Roll storage _roll = roll[rollId];
+        require(_roll.requestId == 0, "Roll finising");
         require(prediction < 6, "Only 6 faces of dice");
 
         uint256 _revenueFee = msg.value * revenueFee / 10000;
@@ -218,24 +218,24 @@ contract Exotic is Initializable, OwnableUpgradeable {
         require(betValue <= maxBet, "Bet above maxBet limit");
 
         // Create the bet.
-        Bet memory _bet = Bet(betValue, msg.sender, raceId, prediction, false);
+        Bet memory _bet = Bet(betValue, msg.sender, rollId, prediction, false);
         bet[msg.sender].push(_bet);
         betId = bet[msg.sender].length - 1;
 
-        // Update the race.
-        _race.winWeights[prediction] += betValue;
-        betsPerRace[raceId][msg.sender].push(betId);
+        // Update the roll.
+        _roll.winWeights[prediction] += betValue;
+        betsPerRoll[rollId][msg.sender].push(betId);
 
         emit Wagered(
-            raceId,
+            rollId,
             msg.sender,
             betValue,
             prediction,
-            totalWagered(raceId)
+            totalWagered(rollId)
         );
 
-        if (raceId < block.timestamp) {
-            startRace(raceId);
+        if (rollId < block.timestamp) {
+            startRoll(rollId);
         }
         if (address(rewarder) != address(0)) {
             rewarder.addReward(msg.sender, msg.value);
@@ -247,8 +247,8 @@ contract Exotic is Initializable, OwnableUpgradeable {
         return betId;
     }
 
-    function betsOnRace(address user, uint64 raceId) external view returns (Bet[] memory) {
-        uint256[] memory betIds = betsPerRace[raceId][user];
+    function betsOnRoll(address user, uint64 rollId) external view returns (Bet[] memory) {
+        uint256[] memory betIds = betsPerRoll[rollId][user];
         uint256 i;
         Bet[] memory result = new Bet[](betIds.length);
         for (i = 0; i < betIds.length; i++){
@@ -260,19 +260,19 @@ contract Exotic is Initializable, OwnableUpgradeable {
     /// @notice Cash out a winning bet.
     function payout(uint256 betId) external {
         Bet storage _bet = bet[msg.sender][betId];
-        Race storage _race = race[_bet.raceId];
-        require(_race.result != 0, "Race not finished");
+        Roll storage _roll = roll[_bet.rollId];
+        require(_roll.result != 0, "Roll not finished");
         require(!_bet.paid, "Bet already paid");
 
-        uint256[1] memory result = raceResult(_bet.raceId);
-        if (_bet.prediction != result[0]) {
+        uint256 result = rollResult(_bet.rollId);
+        if (_bet.prediction != result) {
             return;
         }
-        uint256 _odds = odds(_bet.raceId, _bet.prediction);
+        uint256 _odds = odds(_bet.rollId, _bet.prediction);
         uint256 _payout = (_bet.amount * 1e10) / _odds;
         _bet.paid = true;
         emit Payout(
-            _bet.raceId,
+            _bet.rollId,
             msg.sender,
             _bet.amount,
             _bet.prediction,
@@ -281,52 +281,52 @@ contract Exotic is Initializable, OwnableUpgradeable {
         payable(msg.sender).transfer(_payout);
     }
 
-    /// @notice End the race and set the result.
-    function endRace(
+    /// @notice End the roll and set the result.
+    function endRoll(
         uint256 requestId,
         uint256[] memory randomWords
     ) external {
         require(msg.sender == address(randomProvider), "Not Allowed randomProvider");
-        uint64 raceId = requestIdRace[requestId];
-        Race storage _race = race[raceId];
-        require(_race.result == 0, "Randomness already fulfilled");
-        _race.result = randomWords[0];
-        emit RaceEnd(
-            raceId,
-            totalWagered(raceId),
+        uint64 rollId = requestIdRoll[requestId];
+        Roll storage _roll = roll[rollId];
+        require(_roll.result == 0, "Randomness already fulfilled");
+        _roll.result = randomWords[0];
+        emit RollEnd(
+            rollId,
+            totalWagered(rollId),
             randomWords[0]
         );
     }
 
-    /// @notice Validate a `raceId` is valid to make a bet on.
-    function validateRaceID(uint64 raceId) internal view {
-        // Need to validate race length isn't finished
-        require(raceId % frequency == 0, "Invalid race ID");
-        require(raceId >= start, "Living in the past bro");
-        require(race[raceId].result == 0, "Race finished");
-        require(requestIdRace[raceId] == 0, "Race finising");
+    /// @notice Validate a `rollId` is valid to make a bet on.
+    function validateRollId(uint64 rollId) internal view {
+        // Need to validate roll length isn't finished
+        require(rollId % frequency == 0, "Invalid roll ID");
+        require(rollId >= start, "Living in the past bro");
+        require(roll[rollId].result == 0, "Roll finished");
+        require(requestIdRoll[rollId] == 0, "Roll finising");
     }
 
-    /// @notice Return the results for a race.
-    function raceResult(uint64 raceId) public view returns (uint256[1] memory) {
-        Race memory _race = race[raceId];
-        require(_race.result != 0, "Race is not finished");
+    /// @notice Return the results for a roll.
+    function rollResult(uint64 rollId) public view returns (uint256) {
+        Roll memory _roll = roll[rollId];
+        require(_roll.result != 0, "Roll is not finished");
 
         uint256 i;
 
         uint256 total;
         for (i = 0; i < 6; i++) {
-            total += _race.winWeights[i];
+            total += _roll.winWeights[i];
         }
 
-        uint256[1] memory result;
-        uint256 number = _race.result % total;
+        uint256 result;
+        uint256 number = _roll.result % total;
         for (i = 0; i < 6; i++) {
-            if (_race.winWeights[i] > number) {
-                result[0] = i;
+            if (_roll.winWeights[i] > number) {
+                result = i;
                 break;
             } else {
-                number -= _race.winWeights[i];
+                number -= _roll.winWeights[i];
             }
         }
         return result;
