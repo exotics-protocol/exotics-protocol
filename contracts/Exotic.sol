@@ -146,13 +146,25 @@ contract Exotic is Initializable, OwnableUpgradeable {
         return bet[user].length;
     }
 
-    /// @notice Returns a users bet with given id.
+    function userRollBetCount(uint256 rollId, address user) public view returns (uint256) {
+        return betsPerRoll[rollId][user].length;
+    }
+
+    /// @notice returns a users bet with given id.
     function userBet(
         address user, uint256 betId
     ) external view returns (
         Bet memory
     ) {
         return bet[user][betId];
+    }
+
+    function userRollBet(
+        uint64 rollId, address user, uint256 betId
+    ) external view returns (
+        Bet memory
+    ) {
+        return bet[user][betsPerRoll[rollId][user][betId]];
     }
 
 	/// @notice The time of the next roll to take place.
