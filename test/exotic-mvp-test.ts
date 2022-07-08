@@ -291,4 +291,16 @@ describe("Exotics MVP test case", function () {
     expect(await this.equityFarm.pendingReward(this.signers[0].address)).to.equal(ethers.utils.parseEther('0.005'));
   });
 
+  it("should return bets for a given roll", async function() {
+     const nextRoll = await this.exotic.nextRollId();
+    await this.exotic.placeBet(nextRoll, 0, {value: ethers.utils.parseEther('1')});
+    await this.exotic.placeBet(nextRoll, 1, {value: ethers.utils.parseEther('1')});
+    await this.exotic.placeBet(nextRoll, 2, {value: ethers.utils.parseEther('1')});
+    let bets = await this.lens.userRollBets(nextRoll, this.signers[0].address, 3, 0);
+    expect(bets.length).to.equal(3);
+
+    bets = await this.lens.userRollBets(nextRoll, this.signers[0].address, 1, 0);
+    console.log(bets);
+  });
+
 });

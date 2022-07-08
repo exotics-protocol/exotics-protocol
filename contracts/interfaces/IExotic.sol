@@ -5,9 +5,9 @@ pragma solidity ^0.8.0;
 interface IExotic{
 
     struct Bet {
-        uint64 rollId;
         uint256 amount;
         address account;
+        uint64 rollId;
         uint8 prediction;
         bool paid;
     }
@@ -15,7 +15,6 @@ interface IExotic{
     struct Roll {
         uint256 result;
         uint256 requestId;
-        //uint256[6][3] weights;
     }
 
     function endRoll(uint256 requestId, uint256[] memory randomWords) external;
