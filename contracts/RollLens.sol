@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "./interfaces/IExotic.sol";
 
@@ -105,6 +106,30 @@ contract RollLens is Ownable {
             counter += 1;
         }
         return result;
+    }
+
+    function probabilitySummary(uint64 rollId) public view returns (uint256[6] memory) {
+        uint256[6] memory probabilities;
+        uint8 i;
+        for (i = 0; i < 6; i++) {
+            probabilities[i] = exotic.odds(rollId, i);
+        }
+        return probabilities;
+    }
+
+    function decimalOdds(uint64 rollId) public view returns (uint256[6] memory) {
+        uint256[6] memory dOdds;
+        uint8 i;
+        for (i = 0; i < 6; i++) {
+            uint256 o = exotic.odds(rollId, i);
+            if (o == 0) {
+                dOdds[i] = 0;
+            } else {
+                dOdds[i] = 1e14 / o;
+            }
+        }
+        return dOdds;
+
     }
 
     function userRollBets(

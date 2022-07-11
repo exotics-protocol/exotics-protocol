@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { deployments, ethers, network } from "hardhat";
+import { BigNumber } from "ethers";
 
 describe("Exotics MVP test case", function () {
   before(async function () {
@@ -292,7 +293,7 @@ describe("Exotics MVP test case", function () {
   });
 
   it("should return bets for a given roll", async function() {
-     const nextRoll = await this.exotic.nextRollId();
+    const nextRoll = await this.exotic.nextRollId();
     await this.exotic.placeBet(nextRoll, 0, {value: ethers.utils.parseEther('1')});
     await this.exotic.placeBet(nextRoll, 1, {value: ethers.utils.parseEther('1')});
     await this.exotic.placeBet(nextRoll, 2, {value: ethers.utils.parseEther('1')});
@@ -301,6 +302,39 @@ describe("Exotics MVP test case", function () {
 
     bets = await this.lens.userRollBets(nextRoll, this.signers[0].address, 1, 0);
     console.log(bets);
+  });
+
+  it.only("should return odds from lens", async function () {
+    const nextRoll = await this.exotic.nextRollId();
+
+    await this.exotic.placeBet(nextRoll, 0, {value: ethers.utils.parseEther('1')});
+    let odds = await this.lens.decimalOdds(nextRoll);
+    expect(odds[0]).to.equal(10000);
+    expect(odds[1]).to.equal(0);
+    expect(odds[2]).to.equal(0);
+    expect(odds[3]).to.equal(0);
+    expect(odds[4]).to.equal(0);
+    expect(odds[5]).to.equal(0);
+
+    await this.exotic.placeBet(nextRoll, 1, {value: ethers.utils.parseEther('2')});
+
+    odds = await this.lens.decimalOdds(nextRoll);
+    expect(odds[0]).to.equal(30000);
+    expect(odds[1]).to.equal(15000);
+    expect(odds[2]).to.equal(0);
+    expect(odds[3]).to.equal(0);
+    expect(odds[4]).to.equal(0);
+    expect(odds[5]).to.equal(0);
+
+    await this.exotic.placeBet(nextRoll, 5, {value: ethers.utils.parseEther('10')});
+
+    odds = await this.lens.decimalOdds(nextRoll);
+    expect(odds[0]).to.equal(130000);
+    expect(odds[1]).to.equal(65000);
+    expect(odds[2]).to.equal(0);
+    expect(odds[3]).to.equal(0);
+    expect(odds[4]).to.equal(0);
+    expect(odds[5]).to.equal(13000);
   });
 
 });
