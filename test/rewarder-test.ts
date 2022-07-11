@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { deployments, ethers, network } from "hardhat";
 
-describe("Rewarder test case", function () {
+describe.only("Rewarder test case", function () {
   before(async function () {
     this.signers = await ethers.getSigners();
     this.rewarderFactory = await ethers.getContractFactory('Rewarder');
@@ -18,7 +18,7 @@ describe("Rewarder test case", function () {
       this.signers[0].address,
     );
     this.rewarder = await this.rewarderFactory.deploy(
-      5000, // hald the avax value
+      5000, // half the avax value
       this.signers[0].address
     );
     await this.rewarder.setToken(this.token.address);
@@ -47,6 +47,26 @@ describe("Rewarder test case", function () {
     expect(
       await this.rewarder.claimable(this.signers[0].address)
     ).to.eq(ethers.utils.parseEther('2'));
+  });
+
+  it("should report and dispense correct adjusted amount", async function () {
+    const blockNum = await ethers.provider.getBlockNumber();
+    const block = await ethers.provider.getBlock(blockNum);
+    const timestamp = block.timestamp;
+    expect(
+      await this.rewarder.rewardableAmount(100, timestamp + 60*10)
+    ).to.equal(50);
+    expect(
+      await this.rewarder.rewardableAmount(100, timestamp + 60*9)
+    ).to.equal(45);
+    expect(
+      await this.rewarder.rewardableAmount(100, timestamp + 60*5)
+    ).to.equal(25);
+    expect(
+      await this.rewarder.rewardableAmount(100, timestamp)
+    ).to.equal(0);
+
 
   });
+
 });

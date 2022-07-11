@@ -1,6 +1,8 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
+import "hardhat/console.sol";
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -44,24 +46,39 @@ contract Rewarder is Ownable {
         available[user] += betAmount * rate / 10000;
     }
 
-    function addRewardAdjusted(address user, uint256 betAmount, uint64 raceId) external {
+    function addRewardAdjusted(address user, uint256 betAmount, uint64 rollId) external {
         require(msg.sender == game, "Caller not game");
         // We want to change weight based on how long until
         // the roll starts. We have a maximum and a minimum.
         // time => 10 mins == max reward
         // time == 0 mins == no reward.
         uint256 adjustedRate;
-        if (raceId > block.timestamp) {
+        if (rollId > block.timestamp) {
             adjustedRate = 0;
         } else {
-            uint256 minsUntilStart = (block.timestamp - raceId) / 60;
+            uint256 minsUntilStart = (rollId - block.timestamp) / 60;
             if (minsUntilStart > 10) {
                 adjustedRate = rate;
             } else {
-                adjustedRate = rate / (10 - minsUntilStart);
+                adjustedRate = rate * minsUntilStart / 10;
             }
         }
-        available[user] += betAmount * rate / 10000;
+        available[user] += betAmount * adjustedRate / 10000;
+    }
+
+    function rewardableAmount(uint256 betAmount, uint64 rollId) external view returns (uint256) {
+       uint256 adjustedRate;
+        if (rollId < block.timestamp) {
+            adjustedRate = 0;
+        } else {
+            uint256 minsUntilStart = (rollId - block.timestamp) / 60;
+            if (minsUntilStart >= 10) {
+                adjustedRate = rate;
+            } else {
+                adjustedRate = rate * minsUntilStart / 10;
+            }
+        }
+        return betAmount * adjustedRate / 10000;
     }
 
     /// @notice Remove all incentive tokens from this contract.

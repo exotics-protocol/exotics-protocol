@@ -254,7 +254,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
             startRoll(rollId);
         }
         if (address(rewarder) != address(0)) {
-            rewarder.addReward(msg.sender, msg.value);
+            rewarder.addRewardAdjusted(msg.sender, msg.value, rollId);
         }
         (bool sent, ) = payable(polAddress).call{value: _polFee}("");
         require(sent, "POL Fee not sent");
