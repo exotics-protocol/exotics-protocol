@@ -301,10 +301,9 @@ describe("Exotics MVP test case", function () {
     expect(bets.length).to.equal(3);
 
     bets = await this.lens.userRollBets(nextRoll, this.signers[0].address, 1, 0);
-    console.log(bets);
   });
 
-  it.only("should return odds from lens", async function () {
+  it("should return odds from lens", async function () {
     const nextRoll = await this.exotic.nextRollId();
 
     await this.exotic.placeBet(nextRoll, 0, {value: ethers.utils.parseEther('1')});
@@ -337,4 +336,16 @@ describe("Exotics MVP test case", function () {
     expect(odds[5]).to.equal(13000);
   });
 
+  it("should estimate odds correctly", async function () {
+    const nextRoll = await this.exotic.nextRollId();
+    let odds = await this.lens.estimateOdds(nextRoll, 0, ethers.utils.parseEther('1'));
+    expect(odds).to.equal(10000);
+
+    await this.exotic.placeBet(nextRoll, 0, {value: ethers.utils.parseEther('1')});
+    odds = await this.lens.estimateOdds(nextRoll, 0, ethers.utils.parseEther('1'));
+    expect(odds).to.equal(10000);
+
+    odds = await this.lens.estimateOdds(nextRoll, 1, ethers.utils.parseEther('.99'));
+    expect(odds).to.equal(20000);
+  })
 });

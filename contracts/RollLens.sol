@@ -129,7 +129,12 @@ contract RollLens is Ownable {
             }
         }
         return dOdds;
+    }
 
+    function estimateOdds(uint64 rollId, uint8 result, uint256 betAmount) public view returns (uint256) {
+        uint256 currentTotal = exotic.totalWagered(rollId);
+        uint256 currentWeight = exotic.currentWeight(rollId)[result];
+        return 1e14 / (((currentWeight + betAmount) * 1e10) / (currentTotal + betAmount));
     }
 
     function userRollBets(

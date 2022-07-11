@@ -195,6 +195,10 @@ contract Exotic is Initializable, OwnableUpgradeable {
         return (_roll.winWeights[result] * 1e10) / total;
     }
 
+    function currentWeight(uint64 rollId) external view returns (uint256[6] memory) {
+        return roll[rollId].winWeights;
+    }
+
     /// @notice Start the roll and request result from VRF.
     function startRoll(uint64 rollId) public {
         validateRollId(rollId);
