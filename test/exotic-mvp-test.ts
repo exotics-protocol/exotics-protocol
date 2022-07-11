@@ -347,5 +347,14 @@ describe("Exotics MVP test case", function () {
 
     odds = await this.lens.estimateOdds(nextRoll, 1, ethers.utils.parseEther('.99'));
     expect(odds).to.equal(20000);
+
+    await this.exotic.placeBet(nextRoll, 1, {value: ethers.utils.parseEther('1')});
+
+    odds = await this.lens.estimateOdds(nextRoll, 2, ethers.utils.parseEther('.99'));
+    expect(odds).to.equal(30000);
+
+    await this.exotic.placeBet(nextRoll, 2, {value: ethers.utils.parseEther('4')});
+    odds = await this.lens.estimateOdds(nextRoll, 2, ethers.utils.parseEther('.99'));
+    expect(odds).to.equal(14000);
   })
 });
