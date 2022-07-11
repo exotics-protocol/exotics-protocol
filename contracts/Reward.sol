@@ -44,6 +44,26 @@ contract Rewarder is Ownable {
         available[user] += betAmount * rate / 10000;
     }
 
+    function addRewardAdjusted(address user, uint256 betAmount, uint64 raceId) external {
+        require(msg.sender == game, "Caller not game");
+        // We want to change weight based on how long until
+        // the roll starts. We have a maximum and a minimum.
+        // time => 10 mins == max reward
+        // time == 0 mins == no reward.
+        uint256 adjustedRate;
+        if (raceId > block.timestamp) {
+            adjustedRate = 0;
+        } else {
+            uint256 minsUntilStart = (block.timestamp - raceId) / 60;
+            if (minsUntilStart > 10) {
+                adjustedRate = rate;
+            } else {
+                adjustedRate = rate / (10 - minsUntilStart);
+            }
+        }
+        available[user] += betAmount * rate / 10000;
+    }
+
     /// @notice Remove all incentive tokens from this contract.
     function sweep() external onlyOwner {
         require(xtc.transfer(msg.sender, xtc.balanceOf(address(this))), "failed to sweep");

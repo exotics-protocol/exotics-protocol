@@ -357,4 +357,8 @@ describe("Exotics MVP test case", function () {
     odds = await this.lens.estimateOdds(nextRoll, 2, ethers.utils.parseEther('.99'));
     expect(odds).to.equal(14000);
   })
+
+  it("should reduce rewards as race closer to starting", async function () {
+
+  });
 });
