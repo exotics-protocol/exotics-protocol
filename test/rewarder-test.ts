@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { deployments, ethers, network } from "hardhat";
 
-describe.only("Rewarder test case", function () {
+describe("Rewarder test case", function () {
   before(async function () {
     this.signers = await ethers.getSigners();
     this.rewarderFactory = await ethers.getContractFactory('Rewarder');
