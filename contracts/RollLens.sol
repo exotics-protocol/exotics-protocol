@@ -148,8 +148,6 @@ contract RollLens is Ownable {
         uint256 betCount = exotic.userRollBetCount(rollId, user);
         uint256 start;
         uint256 end;
-
-        // requesting past what we have.
         if ((resultsPerPage * page) > betCount) {
             start = 0;
             end = 0;
@@ -177,11 +175,12 @@ contract RollLens is Ownable {
             _returnBet.prediction = _bet.prediction;
             _returnBet.paid = _bet.paid;
 
-            uint256 _odds = exotic.odds(_bet.rollId, _bet.prediction);
-            if (_odds != 0) {
-                _returnBet.payout = (_bet.amount * 1e10) / _odds;
-            }
-            _returnBet.betId = i - 1;
+            _returnBet.payout = exotic.odds(_bet.rollId, _bet.prediction) != 0 ?
+                (_bet.amount * 1e10) /  exotic.odds(_bet.rollId, _bet.prediction) :
+                0;
+
+            _returnBet.betId = exotic.userRollBetId(user, rollId, i-1);
+
             FullRoll memory _roll = roll(_bet.rollId);
             _returnBet.rollResult = _roll.rollResult;
             _returnBet.rollFinished = _roll.result == 0 ? false : true;

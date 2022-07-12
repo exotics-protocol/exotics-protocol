@@ -32,4 +32,5 @@ interface IExotic{
         Bet memory
     );
     function currentWeight(uint64 rollId) external view returns (uint256[6] memory);
+    function userRollBetId(address user, uint64 rollId, uint256 rollBetId) external view returns (uint256);
 }

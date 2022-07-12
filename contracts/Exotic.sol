@@ -159,6 +159,10 @@ contract Exotic is Initializable, OwnableUpgradeable {
         return bet[user][betId];
     }
 
+    function userRollBetId(address user, uint64 rollId, uint256 rollBetId) external view returns (uint256) {
+        return betsPerRoll[rollId][user][rollBetId];
+    }
+
     function userRollBet(
         uint64 rollId, address user, uint256 betId
     ) external view returns (
