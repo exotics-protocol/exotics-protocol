@@ -33,10 +33,12 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
 
   if (xtc.newlyDeployed) {
     const rewarder = await ethers.getContract('Rewarder');
-    await rewarder.setToken(xtc.address);
+    let tx = await rewarder.setToken(xtc.address);
+    await tx.wait();
 
     const equity = await ethers.getContract('EquityFarm');
-    await equity.setToken(xtc.address);
+    tx = await equity.setToken(xtc.address);
+    await tx.wait();
   }
 };
 

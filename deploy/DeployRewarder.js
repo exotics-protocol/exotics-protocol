@@ -14,7 +14,8 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
   });
   if (rewarder.newlyDeployed) {
     const exotic = await ethers.getContract("Exotic");
-    await exotic.updateRewarder(rewarder.address);
+    let tx = await exotic.updateRewarder(rewarder.address);
+    await tx.wait();
   }
 };
 

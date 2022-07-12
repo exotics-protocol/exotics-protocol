@@ -51,7 +51,8 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
 
   if (exotic.newlyDeployed) {
     const randomProvider = await ethers.getContract('RandomProvider');
-    await randomProvider.setExoticAddress(exotic.address);
+    let tx = await randomProvider.setExoticAddress(exotic.address);
+    await tx.wait();
   }
 
 };

@@ -53,8 +53,9 @@ contract Rewarder is Ownable {
         // time => 10 mins == max reward
         // time == 0 mins == no reward.
         uint256 adjustedRate;
-        if (rollId > block.timestamp) {
-            adjustedRate = 0;
+        if (rollId < block.timestamp) {
+            adjustedRate = rate;
+            /// XXX Just return here.
         } else {
             uint256 minsUntilStart = (rollId - block.timestamp) / 60;
             if (minsUntilStart > 10) {
@@ -69,7 +70,7 @@ contract Rewarder is Ownable {
     function rewardableAmount(uint256 betAmount, uint64 rollId) external view returns (uint256) {
        uint256 adjustedRate;
         if (rollId < block.timestamp) {
-            adjustedRate = 0;
+            adjustedRate = rate;
         } else {
             uint256 minsUntilStart = (rollId - block.timestamp) / 60;
             if (minsUntilStart >= 10) {
