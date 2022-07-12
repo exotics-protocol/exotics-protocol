@@ -7,7 +7,15 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
   const exotic = await deploy('RollLens', {
     contract: 'RollLens',
     from: deployer,
-    args: [exoticAddress],
+    proxy: {
+      proxyContract: "OpenZeppelinTransparentProxy",
+      execute: {
+        init: {
+          methodName: "initialize",
+          args: [exoticAddress],
+        },
+      },
+    },
     log: true,
   });
 };

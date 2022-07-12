@@ -20,6 +20,7 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
     vrfAddress = (await deployments.get('MockVRFCoordinator')).address;
     vrfSubscription = 0;
   }
+
   await deploy('RandomProvider', {
     contract: 'RandomProvider',
     args: [vrfSubscription, vrfAddress],

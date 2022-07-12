@@ -1,18 +1,17 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-
-contract Rewarder is Ownable {
+contract Rewarder is Initializable, OwnableUpgradeable {
 
     mapping(address => uint256) public available;
     mapping(address => uint256) public claimed;
 
-    IERC20 public xtc;
+    IERC20Upgradeable public xtc;
     uint256 public rate;  // in bps
     address public game;
 
@@ -20,12 +19,13 @@ contract Rewarder is Ownable {
     event GameUpdated(address indexed game);
     event RewardTokenSet(address indexed token);
 
-    constructor(uint256 _rate, address _game) {
+    function initialize (uint256 _rate, address _game) public initializer{
         rate = _rate;
         game = _game;
+        __Ownable_init();
     }
 
-    function setToken(IERC20 _token) external onlyOwner {
+    function setToken(IERC20Upgradeable _token) external onlyOwner {
         require(address(_token) != address(0), "Reward token can't be 0 address");
         xtc = _token;
         emit RewardTokenSet(address(_token));

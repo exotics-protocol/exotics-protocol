@@ -1,16 +1,15 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "./interfaces/IExotic.sol";
 
 
 /// @title Helper contract for fetching data from the roll.
-contract RollLens is Ownable {
+contract RollLens is Initializable, OwnableUpgradeable {
 
     struct FullRoll {
         uint64 rollId;
@@ -34,8 +33,9 @@ contract RollLens is Ownable {
 
     IExotic public exotic;
 
-    constructor(IExotic _exotic) {
+    function initialize(IExotic _exotic) public initializer {
         exotic = _exotic;
+        __Ownable_init();
     }
 
     function setExotic(IExotic _exotic) external onlyOwner {

@@ -8,8 +8,16 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
 
   const rewarder = await deploy('Rewarder', {
     contract: 'Rewarder',
-    args: [rate, exoticAddress],
     from: deployer,
+    proxy: {
+      proxyContract: "OpenZeppelinTransparentProxy",
+      execute: {
+        init: {
+          methodName: "initialize",
+          args: [rate, exoticAddress],
+        },
+      },
+    },
     log: true,
   });
   if (rewarder.newlyDeployed) {
