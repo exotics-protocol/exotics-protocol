@@ -232,7 +232,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
         require(prediction < 6, "Only 6 faces of dice");
 
         if(block.timestamp > rollId) {
-            require(totalWagered(rollId) != 0), "Cannot finish a race with no bets");
+            require(totalWagered(rollId) != 0, "Cannot finish a race with no bets");
         }
 
         uint256 _revenueFee = msg.value * revenueFee / 10000;

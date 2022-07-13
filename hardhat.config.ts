@@ -42,6 +42,14 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
       gasPrice: 26000000000,
     },
+    avalanche: {
+      url: "https://api.avax.network/ext/bc/C/rpc",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      chainId: 43114,
+      live: true,
+      saveDeployments: true,
+      gasPrice: 225000000000,
+    },
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
       accounts:
