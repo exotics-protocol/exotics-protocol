@@ -231,6 +231,10 @@ contract Exotic is Initializable, OwnableUpgradeable {
         require(_roll.requestId == 0, "Roll finising");
         require(prediction < 6, "Only 6 faces of dice");
 
+        if(block.timestamp > rollId) {
+            require(totalWagered(rollId) != 0), "Cannot finish a race with no bets");
+        }
+
         uint256 _revenueFee = msg.value * revenueFee / 10000;
         uint256 _polFee = msg.value * polFee / 10000;
         uint256 betValue = msg.value - (_revenueFee + _polFee);
