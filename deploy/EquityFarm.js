@@ -3,11 +3,18 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
   const {deployer} = await getNamedAccounts();
   const chainId = await getChainId();
 
-
-  const rewarder = await deploy('EquityFarm', {
+  const equityFarm = await deploy('EquityFarm', {
     contract: 'EquityFarm',
-    args: [],
     from: deployer,
+    proxy: {
+      proxyContract: "OpenZeppelinTransparentProxy",
+      execute: {
+        init: {
+          methodName: "initialize",
+          args: [],
+        },
+      },
+    },
     log: true,
   });
 };

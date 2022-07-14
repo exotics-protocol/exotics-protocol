@@ -1,20 +1,23 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/interfaces/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+
+
 
 // The equity farm is where you can stake xtc tokens in exchange
 // for a share of the protocol fees.
 
-contract EquityFarm is Ownable {
+contract EquityFarm is Initializable, OwnableUpgradeable{
     struct UserInfo {
         uint256 amount;
         uint256 rewardDebt;
         uint256 claimable;
     }
     mapping(address => UserInfo) public users;
-    IERC20 public xtc;
+    IERC20Upgradeable public xtc;
     uint256 public lastRewardBalance;
     uint256 public accRewardPerShare;
     uint256 private claimable;
@@ -22,7 +25,11 @@ contract EquityFarm is Ownable {
 
     event RewardTokenSet(address indexed token);
 
-    function setToken(IERC20 _token) external onlyOwner {
+    function initialize() public initializer{
+        __Ownable_init();
+    }
+
+    function setToken(IERC20Upgradeable _token) external onlyOwner {
         require(address(_token) != address(0), "Reward token can't be 0 address");
         xtc = _token;
         emit RewardTokenSet(address(_token));
