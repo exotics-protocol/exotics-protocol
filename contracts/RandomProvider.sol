@@ -16,7 +16,7 @@ contract RandomProvider is VRFConsumerBaseV2, Ownable {
     uint64 s_subscriptionId;
     address vrfCoordinator;
     // see https://docs.chain.link/docs/vrf-contracts/#configurations
-    bytes32 keyHash = 0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61;
+    bytes32 keyHash;
     uint32 callbackGasLimit = 200000;
     uint16 requestConfirmations = 3;
     uint32 numWords =  1;
@@ -25,10 +25,12 @@ contract RandomProvider is VRFConsumerBaseV2, Ownable {
 
     constructor(
         uint64 subscriptionId,
-        address _vrfCoordinator
+        address _vrfCoordinator,
+        bytes32 _keyHash
     ) VRFConsumerBaseV2(_vrfCoordinator) {
 		COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
 		s_subscriptionId = subscriptionId;
+        keyHash = _keyHash;
     }
 
     function setExoticAddress(address _exoticAddress) public onlyOwner {

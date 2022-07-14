@@ -10,7 +10,6 @@ contract MockVRFCoordinator {
 	address internal sender;
 	uint256 internal raceId;
 
-
     function requestRandomWords(
         bytes32,
         uint64,
