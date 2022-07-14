@@ -371,6 +371,7 @@ describe("Exotics MVP test case", function () {
     await this.equityFarm.claim();
     const balanceAfter = await this.signers[0].getBalance();
     expect(balanceAfter).to.be.gt(balanceBefore);
+    expect(await this.equityFarm.pendingReward(this.signers[0].address)).to.eq(0);
 
   });
 
