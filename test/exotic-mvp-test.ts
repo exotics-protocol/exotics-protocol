@@ -358,6 +358,22 @@ describe("Exotics MVP test case", function () {
     expect(odds).to.equal(14000);
   })
 
+  it("should allow deposit to equity farm", async function () {
+    const nextRoll = await this.exotic.nextRollId();
+    await this.exotic.placeBet(nextRoll, 0, {value: ethers.utils.parseEther('100')});
+    await this.rewarder.claim();
+    const xtcBalance = await this.xtc.balanceOf(this.signers[0].address);
+    expect(xtcBalance).to.be.gt(0);
+    await this.xtc.approve(this.equityFarm.address, xtcBalance);
+    await this.equityFarm.deposit(xtcBalance);
+    expect(await this.equityFarm.pendingReward(this.signers[0].address)).to.be.gt(0);
+    const balanceBefore = await this.signers[0].getBalance();
+    await this.equityFarm.claim();
+    const balanceAfter = await this.signers[0].getBalance();
+    expect(balanceAfter).to.be.gt(balanceBefore);
+
+  });
+
   it("should reduce rewards as race closer to starting", async function () {
 
   });

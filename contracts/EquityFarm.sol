@@ -117,8 +117,9 @@ contract EquityFarm is Initializable, OwnableUpgradeable{
         uint256 rewardBalance = address(this).balance - claimable;
         if (rewardBalance == lastRewardBalance) return;
         uint256 accrued = rewardBalance - lastRewardBalance;
-        accRewardPerShare += ((accrued * PRECISION) /
-            xtc.balanceOf(address(this)));
+        uint256 xtcBalance = xtc.balanceOf(address(this));
+        if(xtcBalance == 0) return;
+        accRewardPerShare += ((accrued * PRECISION) / xtcBalance);
         lastRewardBalance = rewardBalance;
     }
     fallback() external payable {}
