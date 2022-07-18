@@ -88,6 +88,7 @@ contract Exotic is Initializable, OwnableUpgradeable {
     event POLAddressUpdated(address indexed polAddress);
     event POLFeeUpdated(uint256 polFee);
     event RewarderUpdated(address indexed rewarder);
+    event FrequencyUpdated(uint64 frequency);
 
     function initialize(
         address _randomProviderAddress,
@@ -107,6 +108,11 @@ contract Exotic is Initializable, OwnableUpgradeable {
         maxBet = _maxBet;
         frequency = _frequency;
         __Ownable_init();
+    }
+
+    function updateFrequency(uint64 _frequency) external onlyOwner {
+        frequency = _frequency;
+        emit FrequencyUpdated(_frequency);
     }
 
     function updateRewarder(IRewarder _rewarder) external onlyOwner {

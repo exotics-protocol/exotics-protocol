@@ -11,7 +11,7 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts }) {
   if (chainId == 43114) {
     // Avalanche mainnet uses chainlink
     maxBet = ethers.utils.parseEther("1");
-    frequency = 60*10;
+    frequency = 60*60;
   }
   else if (chainId == 43113) {
     maxBet = ethers.utils.parseEther("10");
