@@ -43,7 +43,6 @@ contract RollLens is Initializable, OwnableUpgradeable {
     }
 
     function roll(uint64 rollId) public view returns (FullRoll memory) {
-        require(rollId % exotic.frequency() == 0, "Invalid roll ID");
         IExotic.Roll memory _roll = exotic.roll(rollId);
         FullRoll memory _returnRoll;
         _returnRoll.rollId = rollId;
