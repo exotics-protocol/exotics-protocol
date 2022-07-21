@@ -24,6 +24,9 @@ contract EquityFarm is Initializable, OwnableUpgradeable{
     uint256 private constant PRECISION = 1e18;
 
     event RewardTokenSet(address indexed token);
+    event Deposited(address indexed account, uint256 amount);
+    event Withdrawn(address indexed account, uint256 amount);
+    event Claimed(address indexed account, uint256 amount);
 
     function initialize() public initializer{
         __Ownable_init();
@@ -52,7 +55,7 @@ contract EquityFarm is Initializable, OwnableUpgradeable{
         user.claimable += pending;
         claimable += pending;
         lastRewardBalance -= pending;
-
+        emit Deposited(msg.sender, amount);
         xtc.transferFrom(msg.sender, address(this), amount);
     }
 
@@ -74,6 +77,7 @@ contract EquityFarm is Initializable, OwnableUpgradeable{
         user.claimable += pending;
         claimable += pending;
         lastRewardBalance -= pending;
+        emit Withdrawn(msg.sender, amount);
         xtc.transfer(msg.sender, amount);
     }
 
@@ -110,6 +114,7 @@ contract EquityFarm is Initializable, OwnableUpgradeable{
         user.claimable = 0;
         user.rewardDebt = (user.amount * accRewardPerShare) / PRECISION;
         lastRewardBalance -= pending;
+        emit Claimed(msg.sender, total);
         payable(msg.sender).transfer(total);
     }
 
